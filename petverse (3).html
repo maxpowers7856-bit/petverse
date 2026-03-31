@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PetVerse</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f0f1a;color:#e8e8f0;min-height:100vh}
+:root{
+  --bg0:#0f0f1a;--bg1:#1a1a2e;--bg2:#16213e;
+  --accent:#7c3aed;--accent2:#06b6d4;--accent3:#f59e0b;--accent4:#10b981;--danger:#ef4444;
+  --text:#e8e8f0;--text2:#9ca3af;--text3:#6b7280;
+  --card:#1e1e32;--border:#2d2d4e;--rad:12px;--rad-sm:8px;
+}
+.screen{display:none}.screen.active{display:block}
+.btn{padding:10px 20px;border-radius:var(--rad-sm);border:none;cursor:pointer;font-size:14px;font-weight:600;transition:all .15s}
+.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:#6d28d9}
+.btn-secondary{background:var(--card);color:var(--text);border:1px solid var(--border)}.btn-secondary:hover{background:#2a2a42}
+.btn-sm{padding:6px 14px;font-size:12px}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-success{background:var(--accent4);color:#fff}
+.btn-warn{background:var(--accent3);color:#111}
+.btn-premium{background:#d97706;color:#fff;border:none}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:16px}
+.tag{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.bar-wrap{background:#2d2d4e;border-radius:4px;height:8px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;transition:width .4s}
+input,select{background:var(--bg2);color:var(--text);border:1px solid var(--border);border-radius:var(--rad-sm);padding:8px 12px;font-size:14px;width:100%;font-family:inherit}
+input:focus,select:focus{outline:none;border-color:var(--accent)}
+h2{font-size:18px;font-weight:600}h3{font-size:15px;font-weight:600}
+.nav{display:flex;background:var(--bg1);border-top:1px solid var(--border);position:sticky;bottom:0;z-index:10}
+.nav-btn{flex:1;padding:9px 1px 7px;background:none;border:none;color:var(--text2);cursor:pointer;font-size:9px;display:flex;flex-direction:column;align-items:center;gap:3px;transition:color .15s}
+.nav-btn.active{color:var(--accent)}
+.nav-icon{font-size:16px;line-height:1}
+.toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:600;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+.sec-title{font-size:13px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px}
+
+#screen-name{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;transition:opacity .4s,transform .4s}
+#screen-name.fade-out{opacity:0;transform:scale(.96);pointer-events:none}
+#screen-main{opacity:0;transition:opacity .4s}
+#screen-main.active{opacity:1}
+.name-logo{font-size:38px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:2px;text-align:center}
+.name-sub{color:var(--text2);font-size:13px;margin-bottom:22px;text-align:center}
+.animal-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:10px 0;width:100%}
+.animal-card{background:var(--card);border:2px solid transparent;border-radius:var(--rad);padding:8px 4px;text-align:center;cursor:pointer;transition:all .15s}
+.animal-card:hover{border-color:var(--accent2)}.animal-card.selected{border-color:var(--accent);background:#1e1a3a}
+.animal-emoji{font-size:24px;line-height:1;display:block;margin-bottom:3px}
+.animal-label{font-size:9px;color:var(--text2);font-weight:600}.animal-type{font-size:8px}
+
+.pet-header{background:var(--bg1);padding:12px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.cur-pill{display:flex;align-items:center;gap:4px;background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:4px 9px;font-size:12px;font-weight:700}
+.pet-gear-overlay{position:absolute;inset:0;pointer-events:none;display:flex;align-items:center;justify-content:center}
+.gear-weapon{position:absolute;bottom:28px;right:16px;font-size:22px;line-height:1;filter:drop-shadow(0 0 4px rgba(245,158,11,.6))}
+.gear-armor{position:absolute;bottom:28px;left:16px;font-size:22px;line-height:1;filter:drop-shadow(0 0 4px rgba(6,182,212,.5))}
+.gear-accessory{position:absolute;top:36px;right:16px;font-size:18px;line-height:1}
+.gear-charm{position:absolute;top:36px;left:16px;font-size:18px;line-height:1}
+.speech-bubble-wrap{width:100%;position:relative}
+.speech-pet{background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:10px 14px;font-size:12px;text-align:center;min-height:36px;display:flex;align-items:center;justify-content:center;line-height:1.5;width:100%;color:var(--text);font-style:italic;position:relative}
+.speech-pet::before{content:'';position:absolute;top:-8px;left:50%;transform:translateX(-50%);border:5px solid transparent;border-bottom-color:var(--border)}
+.speech-pet::after{content:'';position:absolute;top:-6px;left:50%;transform:translateX(-50%);border:4px solid transparent;border-bottom-color:var(--card)}
+.speech-mood{position:absolute;top:-10px;right:10px;font-size:16px;line-height:1}
+.pet-display{background:var(--bg2);border-radius:var(--rad);margin:10px;display:flex;flex-direction:column;align-items:center;padding:14px;gap:10px;position:relative;min-height:165px}
+.equip-full-slots{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.equip-full-slot{background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:14px;cursor:pointer;transition:border-color .15s;display:flex;align-items:center;gap:12px}
+.equip-full-slot:hover{border-color:var(--accent)}
+.equip-full-slot.filled{border-color:var(--accent3)}
+.efs-icon{font-size:28px;line-height:1}
+.efs-info{flex:1}
+.efs-label{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.05em}
+.efs-name{font-size:12px;font-weight:600;margin-top:2px}
+.efs-stats{font-size:10px;color:var(--accent4);margin-top:2px}
+.efs-empty{font-size:11px;color:var(--text3);font-style:italic}
+.pet-art{font-size:66px;line-height:1;text-align:center}
+.pet-art.bounce{animation:bounce .5s ease}
+.pet-art.hurt{animation:hurt .4s ease}
+.speech{background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:8px 12px;font-size:12px;text-align:center;min-height:34px;display:flex;align-items:center;justify-content:center;line-height:1.4;width:100%}
+.lv-badge{position:absolute;top:9px;right:9px;background:var(--accent);color:#fff;border-radius:20px;padding:2px 8px;font-size:11px;font-weight:700}
+.ev-badge{position:absolute;top:9px;left:9px;border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700}
+.risk-badge{position:absolute;bottom:9px;right:9px;background:var(--danger);color:#fff;border-radius:20px;padding:2px 8px;font-size:9px;font-weight:700;display:none}
+.xp-row{margin:0 10px 6px;display:flex;align-items:center;gap:8px}
+.xp-row span{font-size:11px;color:var(--text2);min-width:76px}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:0 10px 7px}
+.stat-card{background:var(--card);border-radius:var(--rad-sm);padding:8px 9px}
+.stat-name{font-size:10px;color:var(--text2);margin-bottom:3px}.stat-val{font-size:11px;font-weight:600;margin-bottom:3px}
+.combat-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin:0 10px 7px}
+.combat-card{background:var(--card);border-radius:var(--rad-sm);padding:7px;text-align:center}
+.combat-label{font-size:9px;color:var(--text2);margin-bottom:2px}.combat-val{font-size:14px;font-weight:700}
+.equip-panel{margin:0 10px 7px;background:var(--card);border-radius:var(--rad);padding:10px;border:1px solid var(--border)}
+.equip-slots{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:7px}
+.equip-slot{background:var(--bg2);border:1px dashed var(--border);border-radius:var(--rad-sm);padding:5px;text-align:center;cursor:pointer;min-height:50px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transition:border-color .15s}
+.equip-slot:hover{border-color:var(--accent)}.equip-slot.filled{border-style:solid;border-color:var(--accent3)}
+.slot-icon{font-size:17px;line-height:1}.slot-label{font-size:8px;color:var(--text2)}.slot-name{font-size:8px;color:var(--accent3);font-weight:600}
+.actions-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:0 10px 7px}
+.action-btn{background:var(--card);border:1px solid var(--border);border-radius:var(--rad-sm);padding:8px 2px;cursor:pointer;text-align:center;font-size:10px;color:var(--text);transition:all .15s}
+.action-btn:hover{background:#2a2a42;border-color:var(--accent)}
+.chat-area{margin:0 10px;background:var(--card);border-radius:var(--rad);padding:10px;border:1px solid var(--border)}
+.chat-row{display:flex;gap:6px;margin-top:6px}
+.chat-input{flex:1;padding:6px 10px;background:var(--bg2);color:var(--text);border:1px solid var(--border);border-radius:var(--rad-sm);font-size:12px}
+.chat-send{background:var(--accent);color:#fff;border:none;border-radius:var(--rad-sm);padding:6px 12px;cursor:pointer;font-weight:600}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes hurt{0%,100%{filter:none}50%{filter:brightness(3) saturate(0)}}
+@keyframes shrink{0%{transform:scale(1);opacity:1}100%{transform:scale(0);opacity:0}}
+@keyframes grow{0%{transform:scale(0);opacity:0}70%{transform:scale(1.2)}100%{transform:scale(1);opacity:1}}
+
+.habit-item{background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:11px;margin-bottom:8px}
+.habit-btns{display:flex;gap:5px;margin-top:7px}
+.habit-check{flex:1;padding:7px;border:none;border-radius:var(--rad-sm);cursor:pointer;font-size:12px;font-weight:600}
+.habit-done{background:#d1fae5;color:#065f46}.habit-fail{background:#fee2e2;color:#991b1b}
+.habit-check:disabled{opacity:.4;cursor:not-allowed}
+.add-habit-form{background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:14px;margin-bottom:10px}
+.form-row{margin-bottom:9px}.form-label{font-size:11px;color:var(--text2);margin-bottom:3px;display:block}
+.radio-row{display:flex;gap:12px}.radio-opt{display:flex;align-items:center;gap:5px;cursor:pointer;font-size:12px}
+.weekly-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:4px}
+.day-dot{width:22px;height:22px;border-radius:50%;border:1px solid var(--border);cursor:pointer;font-size:8px;display:flex;align-items:center;justify-content:center;background:var(--bg2);color:var(--text2);transition:all .15s}
+.day-dot.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+.battle-arena{background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:14px;margin-bottom:10px}
+.fighters{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;margin-bottom:10px}
+.fighter{text-align:center}.fighter-emoji{font-size:42px;line-height:1}
+.fighter-name{font-size:11px;font-weight:600;margin-top:2px}.fighter-hp{font-size:10px;color:var(--text2)}
+.vs-badge{font-size:15px;font-weight:800;color:var(--accent3)}
+.battle-log{background:var(--bg2);border-radius:var(--rad-sm);padding:9px;font-size:11px;color:var(--text2);max-height:110px;overflow-y:auto;line-height:1.8;margin-bottom:9px}
+.battle-log p{margin:0}
+.crit{color:var(--accent3);font-weight:700}.miss{color:var(--text3)}.win{color:var(--accent4);font-weight:700}.lose{color:var(--danger);font-weight:700}
+.battle-btns{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.opp-card{background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:11px;display:flex;align-items:center;justify-content:space-between;gap:9px;margin-bottom:8px}
+
+.boss-card{background:var(--card);border:2px solid var(--danger);border-radius:var(--rad);padding:15px;text-align:center;margin-bottom:10px}
+.boss-emoji{font-size:60px;line-height:1;margin-bottom:5px;display:block}
+.boss-name{font-size:17px;font-weight:700;color:var(--danger)}
+.boss-hp-fill{background:var(--danger);height:10px;border-radius:5px;transition:width .5s}
+.raid-party{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
+.party-member{background:var(--card);border:1px solid var(--border);border-radius:var(--rad-sm);padding:5px 9px;font-size:11px;display:flex;align-items:center;gap:4px}
+.raid-log{background:var(--bg2);border-radius:var(--rad-sm);padding:9px;font-size:11px;color:var(--text2);max-height:130px;overflow-y:auto;line-height:1.8;margin-bottom:9px}
+
+.shop-tabs{display:flex;gap:0;margin-bottom:10px;background:var(--bg2);border-radius:var(--rad-sm);padding:3px}
+.shop-tab{flex:1;padding:6px;background:none;border:none;color:var(--text2);cursor:pointer;border-radius:var(--rad-sm);font-size:12px;font-weight:600;transition:all .15s}
+.shop-tab.active{background:var(--card);color:var(--text)}
+.item-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.item-card{background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:11px}
+.item-icon{font-size:26px;line-height:1;margin-bottom:5px}.item-name{font-size:12px;font-weight:600}
+.item-desc{font-size:10px;color:var(--text2);margin:3px 0}.item-stats{font-size:10px;color:var(--accent4);margin-bottom:5px}
+.item-price{display:flex;align-items:center;gap:4px;font-size:12px;font-weight:700}
+.rarity-common{border-top:3px solid #9ca3af}.rarity-rare{border-top:3px solid #06b6d4}
+.rarity-epic{border-top:3px solid var(--accent)}.rarity-legendary{border-top:3px solid var(--accent3)}
+.inv-item{background:var(--card);border:1px solid var(--border);border-radius:var(--rad-sm);padding:9px 11px;display:flex;align-items:center;justify-content:space-between;gap:9px;margin-bottom:6px}
+
+.lb-item{background:var(--card);border:1px solid var(--border);border-radius:var(--rad-sm);padding:9px 11px;display:flex;align-items:center;gap:9px;margin-bottom:6px}
+.lb-rank{font-size:14px;font-weight:700;min-width:22px;color:var(--text2)}
+.lb-rank.gold{color:#f59e0b}.lb-rank.silver{color:#9ca3af}.lb-rank.bronze{color:#92400e}
+
+.evo-screen,.leveldown-screen,.drop-screen{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:11px;padding:20px;text-align:center}
+.leveldown-screen{background:rgba(120,0,0,.88)}
+.drop-item{font-size:60px;animation:grow .5s ease forwards}
+</style>
+</head>
+<body>
+<div id="toast" class="toast"></div>
+
+<div id="screen-name" class="screen active">
+  <div class="name-logo">PetVerse</div>
+  <div class="name-sub">Raise. Battle. Evolve. Grow.</div>
+  <div style="width:100%;max-width:460px">
+    <div class="sec-title">Choose your starter</div>
+    <div class="animal-grid" id="animalGrid"></div>
+    <div style="margin-top:10px"><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px">Pet name</label><input id="petNameInput" placeholder="Enter a name..." maxlength="16"></div>
+    <div style="margin-top:7px"><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px">Your trainer name</label><input id="trainerNameInput" placeholder="Your name..." maxlength="16"></div>
+    <button class="btn btn-primary" style="width:100%;margin-top:13px;padding:13px;font-size:15px" onclick="startGame()">Begin Journey ✨</button>
+  </div>
+</div>
+
+<div id="screen-main" class="screen">
+  <div id="tab-pet" class="tab-content" style="padding-bottom:60px">
+    <div class="pet-header">
+      <div><div style="font-size:10px;color:var(--text2)" id="trainerLabel">Trainer: —</div><div style="font-size:15px;font-weight:700" id="petHeaderName">—</div></div>
+      <div style="display:flex;gap:6px">
+        <div class="cur-pill">🪙 <span id="goldCount">0</span></div>
+        <div class="cur-pill">💎 <span id="gemCount">0</span></div>
+      </div>
+    </div>
+    <div class="pet-display">
+      <div class="lv-badge" id="levelBadge">Lv 1</div>
+      <div class="ev-badge" id="evoBadge"></div>
+      <div class="risk-badge" id="dangerBadge">⚠ At Risk</div>
+      <div class="pet-gear-overlay">
+        <div class="gear-weapon" id="gearWeapon" style="display:none"></div>
+        <div class="gear-armor" id="gearArmor" style="display:none"></div>
+        <div class="gear-accessory" id="gearAccessory" style="display:none"></div>
+        <div class="gear-charm" id="gearCharm" style="display:none"></div>
+      </div>
+      <div class="pet-art" id="petArt">🐣</div>
+      <div class="speech-bubble-wrap">
+        <div class="speech-pet" id="speechBubble">
+          <span class="speech-mood" id="speechMood"></span>
+          ...
+        </div>
+      </div>
+    </div>
+    <div class="xp-row">
+      <span id="xpLabel">XP: 0/100</span>
+      <div class="bar-wrap" style="flex:1"><div class="bar-fill" id="xpBar" style="width:0%;background:var(--accent)"></div></div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-name">🍖 Hunger</div><div class="stat-val" id="val-hunger">80%</div><div class="bar-wrap"><div class="bar-fill" id="bar-hunger" style="width:80%;background:#f59e0b"></div></div></div>
+      <div class="stat-card"><div class="stat-name">😊 Happiness</div><div class="stat-val" id="val-happy">80%</div><div class="bar-wrap"><div class="bar-fill" id="bar-happy" style="width:80%;background:#ec4899"></div></div></div>
+      <div class="stat-card"><div class="stat-name">⚡ Energy</div><div class="stat-val" id="val-energy">80%</div><div class="bar-wrap"><div class="bar-fill" id="bar-energy" style="width:80%;background:#06b6d4"></div></div></div>
+      <div class="stat-card"><div class="stat-name">🧼 Cleanliness</div><div class="stat-val" id="val-clean">80%</div><div class="bar-wrap"><div class="bar-fill" id="bar-clean" style="width:80%;background:#10b981"></div></div></div>
+    </div>
+    <div class="combat-row">
+      <div class="combat-card"><div class="combat-label">⚔️ ATK</div><div class="combat-val" id="val-atk">10</div></div>
+      <div class="combat-card"><div class="combat-label">🛡️ DEF</div><div class="combat-val" id="val-def">8</div></div>
+      <div class="combat-card"><div class="combat-label">❤️ HP</div><div class="combat-val" id="val-hp">100</div></div>
+    </div>
+    <div class="actions-row">
+      <button class="action-btn" onclick="doAction('feed')"><div style="font-size:19px">🍖</div>Feed</button>
+      <button class="action-btn" onclick="doAction('play')"><div style="font-size:19px">🎮</div>Play</button>
+      <button class="action-btn" onclick="doAction('sleep')"><div style="font-size:19px">💤</div>Sleep</button>
+      <button class="action-btn" onclick="doAction('clean')"><div style="font-size:19px">🛁</div>Clean</button>
+    </div>
+  </div>
+
+  <div id="tab-habits" class="tab-content" style="display:none;padding:13px 13px 65px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <h2>Habits</h2><button class="btn btn-sm btn-primary" onclick="toggleHabitForm()">+ Add</button>
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--rad-sm);padding:9px;margin-bottom:10px;font-size:11px;color:var(--text2);line-height:1.6">
+      ✅ Completing good habits heals your pet and earns XP &nbsp;·&nbsp; ❌ Failing hurts your pet's HP &nbsp;·&nbsp; Too much damage = level loss!
+    </div>
+    <div id="habitFormWrap" style="display:none">
+      <div class="add-habit-form">
+        <h3 style="margin-bottom:9px">New habit</h3>
+        <div class="form-row"><label class="form-label">Habit name</label><input id="hName" placeholder="e.g. Morning run, No soda..."></div>
+        <div class="form-row"><label class="form-label">Type</label>
+          <div class="radio-row">
+            <label class="radio-opt"><input type="radio" name="htype" value="build" checked> Build (do it)</label>
+            <label class="radio-opt"><input type="radio" name="htype" value="break"> Break (avoid it)</label>
+          </div></div>
+        <div class="form-row"><label class="form-label">Difficulty</label>
+          <select id="hDiff">
+            <option value="easy">Easy (+5 XP / −5 HP on fail)</option>
+            <option value="medium" selected>Medium (+15 XP / −15 HP on fail)</option>
+            <option value="hard">Hard (+30 XP / −30 HP on fail)</option>
+          </select></div>
+        <div class="form-row"><label class="form-label">Days</label>
+          <div class="weekly-grid" id="dayGrid">
+            <div class="day-dot active" data-day="0">M</div><div class="day-dot active" data-day="1">T</div><div class="day-dot active" data-day="2">W</div><div class="day-dot active" data-day="3">T</div><div class="day-dot active" data-day="4">F</div><div class="day-dot" data-day="5">S</div><div class="day-dot" data-day="6">S</div>
+          </div></div>
+        <div style="display:flex;gap:7px">
+          <button class="btn btn-primary" style="flex:1" onclick="addHabit()">Add habit</button>
+          <button class="btn btn-secondary" onclick="toggleHabitForm()">Cancel</button>
+        </div>
+      </div>
+    </div>
+    <div id="habitStreakBanner" style="background:var(--card);border:1px solid var(--accent3);border-radius:var(--rad);padding:11px;text-align:center;margin-bottom:10px;display:none">
+      <div style="font-size:20px;font-weight:800;color:var(--accent3)">🔥 <span id="streakNum">0</span> day streak!</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:2px">Your pet thrives from your consistency!</div>
+    </div>
+    <div id="habitList"></div>
+    <div id="habitEmpty" style="text-align:center;color:var(--text2);padding:30px 0;font-size:13px">No habits yet. Add your first one above!</div>
+  </div>
+
+  <div id="tab-battle" class="tab-content" style="display:none;padding:13px 13px 65px">
+    <h2 style="margin-bottom:11px">Battle</h2>
+    <div id="battleSetup"><div class="sec-title">Choose opponent</div><div id="oppList"></div></div>
+    <div id="battleArena" style="display:none">
+      <div class="battle-arena">
+        <div class="fighters">
+          <div class="fighter"><div class="fighter-emoji" id="myFighterEmoji"></div><div class="fighter-name" id="myFighterName"></div><div class="fighter-hp" id="myFighterHp"></div><div class="bar-wrap" style="margin-top:3px"><div class="bar-fill" id="myHpBar" style="background:#10b981;width:100%"></div></div></div>
+          <div class="vs-badge">VS</div>
+          <div class="fighter"><div class="fighter-emoji" id="oppFighterEmoji"></div><div class="fighter-name" id="oppFighterName"></div><div class="fighter-hp" id="oppFighterHp"></div><div class="bar-wrap" style="margin-top:3px"><div class="bar-fill" id="oppHpBar" style="background:var(--danger);width:100%"></div></div></div>
+        </div>
+        <div class="battle-log" id="battleLog"></div>
+        <div class="battle-btns">
+          <button class="btn btn-primary" style="font-size:12px" onclick="battleAction('attack')">⚔️ Attack</button>
+          <button class="btn btn-warn" style="font-size:12px" onclick="battleAction('special')">✨ Special</button>
+          <button class="btn btn-secondary" style="font-size:12px" onclick="battleAction('defend')">🛡️ Defend</button>
+          <button class="btn btn-danger" style="font-size:12px" onclick="battleAction('flee')">🏃 Flee</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-raid" class="tab-content" style="display:none;padding:13px 13px 65px">
+    <h2 style="margin-bottom:11px">World Raid</h2>
+    <div class="boss-card">
+      <span class="boss-emoji" id="bossEmoji">👹</span>
+      <div class="boss-name" id="bossName">Shadow Titan</div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:7px" id="bossLevel">World Boss · Level 50</div>
+      <div class="bar-wrap"><div class="boss-hp-fill" id="bossHpBar" style="width:100%"></div></div>
+      <div style="font-size:11px;color:var(--text2);margin-top:3px"><span id="bossHpText">5000</span> / <span id="bossHpMax">5000</span> HP</div>
+    </div>
+    <div class="sec-title">Raid Party</div><div class="raid-party" id="raidParty"></div>
+    <div class="sec-title">Raid Log</div><div class="raid-log" id="raidLog"><p>Gather your party and strike!</p></div>
+    <div style="display:flex;gap:7px;margin-bottom:11px">
+      <button class="btn btn-danger" style="flex:1" onclick="raidAttack()">⚔️ Strike Boss</button>
+      <button class="btn btn-secondary" onclick="refreshRaid()">🔄 New</button>
+    </div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px"><span>Damage dealt</span><span style="font-weight:700;color:var(--accent)" id="raidDmgTotal">0</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px"><span>XP earned</span><span style="font-weight:700;color:var(--accent4)" id="raidXpEarned">0</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:12px"><span>Gold earned</span><span style="font-weight:700;color:var(--accent3)" id="raidGoldEarned">0</span></div>
+    </div>
+  </div>
+
+  <div id="tab-shop" class="tab-content" style="display:none;padding:13px 13px 65px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:11px">
+      <h2>Gear</h2>
+      <div style="display:flex;gap:6px">
+        <div class="cur-pill">🪙 <span id="goldCount2">0</span></div>
+        <div class="cur-pill">💎 <span id="gemCount2">0</span></div>
+      </div>
+    </div>
+    <div class="shop-tabs">
+      <button class="shop-tab active" onclick="switchShopTab('shop',this)">Shop</button>
+      <button class="shop-tab" onclick="switchShopTab('inventory',this)">Inventory</button>
+      <button class="shop-tab" onclick="switchShopTab('premium',this)">Premium 💎</button>
+    </div>
+    <div id="shopPanel"></div>
+    <div id="inventoryPanel" style="display:none"></div>
+    <div id="premiumPanel" style="display:none"></div>
+  </div>
+
+  <div id="tab-equip" class="tab-content" style="display:none;padding:13px 13px 65px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <h2>Equipment</h2>
+      <div style="display:flex;gap:6px">
+        <div class="cur-pill">🪙 <span id="goldCount3">0</span></div>
+        <div class="cur-pill">💎 <span id="gemCount3">0</span></div>
+      </div>
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--rad-sm);padding:9px;margin-bottom:14px;font-size:11px;color:var(--text2)">
+      Tap a slot to equip or swap gear. Items drop from battles and raids, or buy them in the Gear tab.
+    </div>
+    <div id="equipFullSlots" class="equip-full-slots"></div>
+    <div class="sec-title" style="margin-top:4px">Active bonuses</div>
+    <div class="card" id="equipBonusCard">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px"><span>Total ATK bonus</span><span style="font-weight:700;color:var(--accent4)" id="eqAtkBonus">+0</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px"><span>Total DEF bonus</span><span style="font-weight:700;color:var(--accent4)" id="eqDefBonus">+0</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:12px"><span>Total HP bonus</span><span style="font-weight:700;color:var(--accent4)" id="eqHpBonus">+0</span></div>
+    </div>
+  </div>
+
+  <div id="tab-social" class="tab-content" style="display:none;padding:13px 13px 65px">
+    <h2 style="margin-bottom:11px">Leaderboard</h2><div id="lbList"></div>
+  </div>
+
+  <nav class="nav">
+    <button class="nav-btn active" onclick="switchTab('pet',this)"><span class="nav-icon">🐾</span><span>Pet</span></button>
+    <button class="nav-btn" onclick="switchTab('habits',this)"><span class="nav-icon">✅</span><span>Habits</span></button>
+    <button class="nav-btn" onclick="switchTab('battle',this)"><span class="nav-icon">⚔️</span><span>Battle</span></button>
+    <button class="nav-btn" onclick="switchTab('raid',this)"><span class="nav-icon">👹</span><span>Raid</span></button>
+    <button class="nav-btn" onclick="switchTab('equip',this)"><span class="nav-icon">🗡️</span><span>Equip</span></button>
+    <button class="nav-btn" onclick="switchTab('shop',this)"><span class="nav-icon">🏪</span><span>Gear</span></button>
+    <button class="nav-btn" onclick="switchTab('social',this)"><span class="nav-icon">🏆</span><span>Rank</span></button>
+  </nav>
+</div>
+
+<script>
+const ANIMALS=[
+  {id:'fox',name:'Fox',baby:'🦊',teen:'🦊',adult:'🦊',legend:'🔮',type:'Fire',color:'#ef4444',atkB:2,defB:0},
+  {id:'wolf',name:'Wolf',baby:'🐺',teen:'🐺',adult:'🐺',legend:'🌕',type:'Dark',color:'#7c3aed',atkB:3,defB:0},
+  {id:'cat',name:'Cat',baby:'🐱',teen:'🐱',adult:'🐱',legend:'😸',type:'Swift',color:'#ec4899',atkB:1,defB:2},
+  {id:'bear',name:'Bear',baby:'🐻',teen:'🐻',adult:'🐻',legend:'🐻‍❄️',type:'Earth',color:'#92400e',atkB:0,defB:4},
+  {id:'bunny',name:'Bunny',baby:'🐰',teen:'🐰',adult:'🐰',legend:'🌙',type:'Wind',color:'#f9a8d4',atkB:1,defB:1},
+  {id:'duck',name:'Duck',baby:'🐥',teen:'🦆',adult:'🦆',legend:'🦅',type:'Water',color:'#06b6d4',atkB:1,defB:2},
+  {id:'dragon',name:'Dragon',baby:'🐣',teen:'🐲',adult:'🐉',legend:'🔥',type:'Legendary',color:'#f59e0b',atkB:4,defB:2},
+  {id:'unicorn',name:'Unicorn',baby:'🦄',teen:'🦄',adult:'🦄',legend:'✨',type:'Magic',color:'#8b5cf6',atkB:2,defB:3},
+  {id:'tiger',name:'Tiger',baby:'🐯',teen:'🐯',adult:'🐯',legend:'⚡',type:'Storm',color:'#f59e0b',atkB:3,defB:1},
+  {id:'penguin',name:'Penguin',baby:'🐧',teen:'🐧',adult:'🐧',legend:'❄️',type:'Ice',color:'#67e8f9',atkB:1,defB:3},
+];
+const EVO_LEVELS=[{tier:'Baby',minLv:1},{tier:'Teen',minLv:10},{tier:'Adult',minLv:25},{tier:'Legend',minLv:50}];
+const EVO_COLORS={Baby:'#6b7280',Teen:'#06b6d4',Adult:'#7c3aed',Legend:'#f59e0b'};
+const XP_TABLE=[0,100,220,370,550,780,1070,1440,1920,2540,3340];
+const EQUIP_SLOTS=[{id:'weapon',label:'Weapon',icon:'⚔️'},{id:'armor',label:'Armor',icon:'🛡️'},{id:'accessory',label:'Accessory',icon:'💍'},{id:'charm',label:'Charm',icon:'🧿'}];
+const SHOP_ITEMS=[
+  {id:'iron_sword',name:'Iron Sword',icon:'🗡️',slot:'weapon',rarity:'common',atk:5,def:0,hp:0,cost:80,desc:'A sturdy blade.'},
+  {id:'leather_armor',name:'Leather Armor',icon:'🧥',slot:'armor',rarity:'common',atk:0,def:6,hp:20,cost:100,desc:'Basic protection.'},
+  {id:'lucky_ring',name:'Lucky Ring',icon:'💍',slot:'accessory',rarity:'rare',atk:3,def:3,hp:10,cost:200,desc:'+3 ATK & DEF.'},
+  {id:'power_amulet',name:'Power Amulet',icon:'🧿',slot:'charm',rarity:'rare',atk:0,def:0,hp:40,cost:250,desc:'+40 max HP.'},
+  {id:'flame_blade',name:'Flame Blade',icon:'🔥',slot:'weapon',rarity:'epic',atk:12,def:0,hp:0,cost:500,desc:'Burns with fury.'},
+  {id:'crystal_shield',name:'Crystal Shield',icon:'🔮',slot:'armor',rarity:'epic',atk:0,def:15,hp:30,cost:600,desc:'Near-magical defense.'},
+];
+const PREMIUM_ITEMS=[
+  {id:'rainbow_charm',name:'Rainbow Charm',icon:'🌈',slot:'charm',rarity:'legendary',atk:8,def:8,hp:50,cost:5,desc:'Legendary all-stats boost.',special:null},
+  {id:'angel_wings',name:'Angel Wings',icon:'👼',slot:'accessory',rarity:'legendary',atk:5,def:10,hp:80,cost:8,desc:'Celestial protection.',special:null},
+  {id:'xp_boost',name:'XP Boost x2',icon:'⭐',slot:null,rarity:'epic',atk:0,def:0,hp:0,cost:3,desc:'Double XP for 10 actions.',special:'xpboost'},
+  {id:'revive',name:'Revive Potion',icon:'🧪',slot:null,rarity:'rare',atk:0,def:0,hp:0,cost:2,desc:'Restore full HP.',special:'revive'},
+  {id:'level_shield',name:'Level Shield',icon:'🛑',slot:null,rarity:'epic',atk:0,def:0,hp:0,cost:4,desc:'Prevents next level loss.',special:'levelshield'},
+];
+const DROP_POOL=[
+  {id:'bronze_fang',name:'Bronze Fang',icon:'🦷',slot:'weapon',rarity:'common',atk:3,def:0,hp:0,desc:'A sharp fang.'},
+  {id:'scale_piece',name:'Scale Piece',icon:'🐚',slot:'armor',rarity:'common',atk:0,def:4,hp:5,desc:'Natural armor.'},
+  {id:'void_ring',name:'Void Ring',icon:'⚫',slot:'accessory',rarity:'rare',atk:4,def:4,hp:0,desc:'Forged in darkness.'},
+  {id:'phoenix_feather',name:'Phoenix Feather',icon:'🪶',slot:'charm',rarity:'rare',atk:2,def:2,hp:25,desc:'Warm to the touch.'},
+  {id:'storm_edge',name:'Storm Edge',icon:'⚡',slot:'weapon',rarity:'epic',atk:10,def:0,hp:0,desc:'Crackles with energy.'},
+  {id:'titan_plate',name:'Titan Plate',icon:'🏛️',slot:'armor',rarity:'epic',atk:0,def:12,hp:20,desc:'Impossibly heavy.'},
+  {id:'dragon_eye',name:'Dragon Eye',icon:'👁️',slot:'charm',rarity:'legendary',atk:6,def:6,hp:30,desc:'Sees through all things.'},
+];
+const BOSSES=[
+  {name:'Shadow Titan',emoji:'👹',hp:5000,atk:25,level:50},
+  {name:'Frost Golem',emoji:'🧊',hp:3500,atk:18,level:35},
+  {name:'Storm Drake',emoji:'🌪️',hp:6500,atk:32,level:65},
+  {name:'Void Serpent',emoji:'🐍',hp:4200,atk:22,level:45},
+  {name:'Lava King',emoji:'🌋',hp:8000,atk:40,level:80},
+];
+const FAKE_PLAYERS=[
+  {name:'PixelKnight',pet:'Wolf',emoji:'🐺',tier:'Adult',level:28,stars:340},
+  {name:'StarGazer',pet:'Dragon',emoji:'🐉',tier:'Adult',level:31,stars:412},
+  {name:'NightOwl',pet:'Fox',emoji:'🦊',tier:'Teen',level:14,stars:180},
+  {name:'IceDancer',pet:'Penguin',emoji:'🐧',tier:'Legend',level:52,stars:890},
+  {name:'ThunderBolt',pet:'Tiger',emoji:'🐯',tier:'Adult',level:27,stars:315},
+];
+
+let G={
+  started:false,trainer:'',petName:'',animalId:'dragon',
+  level:1,xp:0,
+  hunger:80,happy:80,energy:80,clean:80,
+  baseAtk:10,baseDef:8,baseHp:100,hp:100,maxHp:100,
+  gold:50,gems:5,stars:0,
+  habits:[],
+  inventory:[],equipped:{weapon:null,armor:null,accessory:null,charm:null},
+  raidDmg:0,raidXp:0,raidGold:0,
+  currentBoss:null,bossHp:5000,bossMaxHp:5000,
+  battleState:null,busy:false,
+  xpBoostLeft:0,levelShield:false,
+};
+let selAnimal='dragon';
+
+function getAnimal(){return ANIMALS.find(a=>a.id===G.animalId)||ANIMALS[6];}
+function getTier(){let t='Baby';for(const e of EVO_LEVELS){if(G.level>=e.minLv)t=e.tier;}return t;}
+function getPetEmoji(){const a=getAnimal(),t=getTier();return t==='Baby'?a.baby:t==='Teen'?a.teen:t==='Adult'?a.adult:a.legend;}
+function clamp(v,mn=0,mx=100){return Math.max(mn,Math.min(mx,v));}
+function eqBonus(){let atk=0,def=0,hp=0;Object.values(G.equipped).forEach(e=>{if(e){atk+=e.atk||0;def+=e.def||0;hp+=e.hp||0;}});return{atk,def,hp};}
+function totalAtk(){const a=getAnimal();return G.baseAtk+(G.level-1)*(2+a.atkB)+eqBonus().atk;}
+function totalDef(){const a=getAnimal();return G.baseDef+(G.level-1)*(1+a.defB)+eqBonus().def;}
+function totalMaxHp(){return G.baseHp+(G.level-1)*10+eqBonus().hp;}
+
+function toast(msg,col='var(--accent)'){
+  const el=document.getElementById('toast');el.textContent=msg;el.style.background=col;el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),2800);
+}
+
+function initAnimalGrid(){
+  const g=document.getElementById('animalGrid');g.innerHTML='';
+  ANIMALS.forEach(a=>{
+    const d=document.createElement('div');d.className='animal-card'+(a.id===selAnimal?' selected':'');
+    d.innerHTML=`<span class="animal-emoji">${a.baby}</span><div class="animal-label">${a.name}</div><div class="animal-type" style="color:${a.color}">${a.type}</div>`;
+    d.onclick=()=>{selAnimal=a.id;document.querySelectorAll('.animal-card').forEach(c=>c.classList.remove('selected'));d.classList.add('selected');};
+    g.appendChild(d);
+  });
+}
+
+function startGame(){
+  const pn=document.getElementById('petNameInput').value.trim();
+  const tn=document.getElementById('trainerNameInput').value.trim();
+  if(!pn||!tn){toast('Fill in all fields','var(--danger)');return;}
+  G.trainer=tn;G.petName=pn;G.animalId=selAnimal;G.started=true;
+  const a=getAnimal();G.baseAtk=10+a.atkB;G.baseDef=8+a.defB;G.maxHp=G.baseHp;G.hp=G.maxHp;
+  const nameScreen=document.getElementById('screen-name');
+  nameScreen.classList.add('fade-out');
+  setTimeout(()=>{
+    nameScreen.style.display='none';
+    document.getElementById('screen-main').classList.add('active');
+  },400);
+  renderPet();renderEquipFull();renderBattleSetup();initRaid();renderLeaderboard();
+  document.querySelectorAll('.day-dot').forEach(d=>d.onclick=()=>d.classList.toggle('active'));
+  askClaude(`You just hatched for trainer ${tn}! Introduce yourself as ${G.petName} the ${a.name} in 1 excited sentence.`);
+  setTimeout(()=>autoSpeak(),3000);
+  setInterval(tickStats,10000);
+  setInterval(()=>{G.gold+=2;syncCurrency();},8000);
+  setInterval(autoSpeak,25000);
+}
+
+function switchTab(tab,btn){
+  document.querySelectorAll('.tab-content').forEach(t=>t.style.display='none');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+tab).style.display='block';btn.classList.add('active');
+  if(tab==='habits') renderHabits();
+  if(tab==='battle') renderBattleSetup();
+  if(tab==='shop'){renderShop();renderInventory();renderPremiumShop();}
+  if(tab==='equip') renderEquipFull();
+  if(tab==='social') renderLeaderboard();
+}
+
+function syncCurrency(){
+  ['goldCount','goldCount2','goldCount3'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=G.gold;});
+  ['gemCount','gemCount2','gemCount3'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=G.gems;});
+}
+
+function renderPet(){
+  G.maxHp=totalMaxHp();G.hp=Math.min(G.hp,G.maxHp);
+  const tier=getTier();
+  document.getElementById('petArt').textContent=getPetEmoji();
+  document.getElementById('petHeaderName').textContent=G.petName;
+  document.getElementById('trainerLabel').textContent='Trainer: '+G.trainer;
+  document.getElementById('levelBadge').textContent='Lv '+G.level;
+  const eb=document.getElementById('evoBadge');eb.textContent=tier;eb.style.background=EVO_COLORS[tier]+'33';eb.style.color=EVO_COLORS[tier];
+  document.getElementById('dangerBadge').style.display=G.hp<G.maxHp*0.3?'block':'none';
+  syncCurrency();
+  ['hunger','happy','energy','clean'].forEach(s=>{const v=Math.round(G[s]);document.getElementById('bar-'+s).style.width=v+'%';document.getElementById('val-'+s).textContent=v+'%';});
+  document.getElementById('val-atk').textContent=totalAtk();
+  document.getElementById('val-def').textContent=totalDef();
+  document.getElementById('val-hp').textContent=Math.round(G.hp)+'/'+G.maxHp;
+  const xpN=XP_TABLE[Math.min(G.level,10)];
+  document.getElementById('xpBar').style.width=(xpN?Math.round(G.xp/xpN*100):100)+'%';
+  document.getElementById('xpLabel').textContent=`XP: ${G.xp}/${xpN}`;
+  G.stars=Math.floor(G.level*15+G.xp/5);
+  renderGearOverlay();
+}
+
+function renderGearOverlay(){
+  const slots={weapon:'gearWeapon',armor:'gearArmor',accessory:'gearAccessory',charm:'gearCharm'};
+  Object.entries(slots).forEach(([slot,elId])=>{
+    const el=document.getElementById(elId);if(!el) return;
+    const eq=G.equipped[slot];
+    if(eq){el.textContent=eq.icon;el.style.display='block';}
+    else{el.style.display='none';}
+  });
+}
+
+function renderEquipFull(){
+  const c=document.getElementById('equipFullSlots');if(!c) return;c.innerHTML='';
+  const bonus=eqBonus();
+  document.getElementById('eqAtkBonus').textContent='+'+bonus.atk;
+  document.getElementById('eqDefBonus').textContent='+'+bonus.def;
+  document.getElementById('eqHpBonus').textContent='+'+bonus.hp;
+  EQUIP_SLOTS.forEach(slot=>{
+    const eq=G.equipped[slot.id];
+    const d=document.createElement('div');
+    d.className='equip-full-slot'+(eq?' filled':'');
+    if(eq){
+      d.innerHTML=`<div class="efs-icon">${eq.icon}</div><div class="efs-info"><div class="efs-label">${slot.label}</div><div class="efs-name">${eq.name}</div><div class="efs-stats">ATK+${eq.atk} DEF+${eq.def} HP+${eq.hp}</div></div><div style="font-size:11px;color:var(--accent2)">Swap</div>`;
+    }else{
+      d.innerHTML=`<div class="efs-icon" style="opacity:.3">${slot.icon}</div><div class="efs-info"><div class="efs-label">${slot.label}</div><div class="efs-empty">Empty slot</div></div><div style="font-size:11px;color:var(--accent)">+ Equip</div>`;
+    }
+    d.onclick=()=>openEquipModal(slot.id);c.appendChild(d);
+  });
+}
+
+function getMoodEmoji(){
+  if(G.hp<G.maxHp*0.2) return '😰';
+  if(G.hunger<20) return '😫';
+  if(G.happy<20) return '😢';
+  if(G.energy<20) return '😴';
+  if(G.clean<20) return '🤢';
+  if(G.hunger>80&&G.happy>80&&G.energy>70) return '😄';
+  if(G.level>=50) return '😎';
+  return '🙂';
+}
+
+function buildAutoSpeechPrompt(){
+  const a=getAnimal(),tier=getTier();
+  const tp={Fire:'bold and fiery',Dark:'mysterious and brooding',Swift:'cheeky and quick',Earth:'calm and grumpy',Wind:'cheerful and flighty',Water:'curious and bubbly',Legendary:'dramatic and noble',Magic:'whimsical and sparkly',Storm:'intense and energetic',Ice:'cool and chill'};
+  const eqList=Object.entries(G.equipped).filter(([,v])=>v).map(([s,e])=>e.name).join(', ')||'none';
+  const urgency=G.hunger<20?'VERY HUNGRY':G.hp<G.maxHp*0.25?'LOW HP, worried':G.happy<20?'very sad':G.energy<20?'exhausted':G.clean<20?'dirty and miserable':'feeling okay';
+  return `You are ${G.petName}, a ${tier}-stage ${a.name} (${a.type} type), level ${G.level}. Trainer: ${G.trainer}. hunger=${Math.round(G.hunger)}%, happy=${Math.round(G.happy)}%, energy=${Math.round(G.energy)}%, clean=${Math.round(G.clean)}%, HP=${Math.round(G.hp)}/${G.maxHp}. Equipped: ${eqList}. Current mood: ${urgency}. Personality: ${tp[a.type]||'friendly'}. Speak unprompted to your trainer in 1 short sentence (max 18 words) — comment on how you feel right now, or something that caught your attention. Be in character. No emoji in text.`;
+}
+
+async function autoSpeak(){
+  if(G.busy) return;
+  G.busy=true;
+  const bubble=document.getElementById('speechBubble');
+  const moodEl=document.getElementById('speechMood');
+  bubble.innerHTML=`<span class="speech-mood">${getMoodEmoji()}</span><em style="color:var(--text2)">thinking...</em>`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:60,messages:[{role:'user',content:buildAutoSpeechPrompt()}]})});
+    const data=await res.json();
+    const reply=data.content?.[0]?.text?.trim()||'...';
+    bubble.innerHTML=`<span class="speech-mood">${getMoodEmoji()}</span>${reply}`;
+  }catch(e){bubble.innerHTML=`<span class="speech-mood">${getMoodEmoji()}</span>*static*`;}
+  G.busy=false;
+}
+
+function openEquipModal(slotId){
+  const compatible=G.inventory.filter(i=>i.slot===slotId);
+  const equipped=G.equipped[slotId];
+  const si=EQUIP_SLOTS.find(s=>s.id===slotId);
+  const backdrop=document.createElement('div');
+  backdrop.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:150;display:flex;align-items:flex-end;justify-content:center;padding:16px';
+  backdrop.onclick=e=>{if(e.target===backdrop)backdrop.remove();};
+  let html=`<div style="background:var(--bg1);border-radius:var(--rad) var(--rad) 0 0;padding:18px;width:100%;max-width:460px;max-height:70vh;overflow-y:auto">
+    <div style="font-size:14px;font-weight:700;margin-bottom:11px">${si.icon} ${si.label} slot</div>`;
+  if(equipped) html+=`<div style="margin-bottom:10px;padding:9px;background:var(--bg2);border-radius:var(--rad-sm);border:1px solid var(--accent3)"><div style="font-size:10px;color:var(--accent3);margin-bottom:3px">Currently equipped</div><div style="display:flex;align-items:center;justify-content:space-between"><span>${equipped.icon} <strong>${equipped.name}</strong></span><button class="btn btn-sm btn-secondary" onclick="unequipItem('${slotId}');document.querySelector('[style*=fixed]').remove()">Unequip</button></div></div>`;
+  if(!compatible.length) html+=`<div style="color:var(--text2);font-size:13px">No compatible items. Win battles & raids for drops, or visit the shop!</div>`;
+  else compatible.forEach(item=>{
+    const isEq=equipped&&equipped.id===item.id;
+    html+=`<div style="background:var(--card);border-radius:var(--rad-sm);padding:9px;margin-bottom:7px;display:flex;align-items:center;justify-content:space-between;gap:9px"><div style="display:flex;align-items:center;gap:7px"><span style="font-size:20px">${item.icon}</span><div><div style="font-size:12px;font-weight:600">${item.name}</div><div style="font-size:10px;color:var(--accent4)">ATK+${item.atk} DEF+${item.def} HP+${item.hp}</div></div></div><button class="btn btn-sm ${isEq?'btn-secondary':'btn-primary'}" ${isEq?'disabled':''} onclick="equipFromModal('${slotId}','${item.id}');document.querySelector('[style*=fixed]').remove()">${isEq?'Equipped':'Equip'}</button></div>`;
+  });
+  html+=`</div>`;backdrop.innerHTML=html;document.body.appendChild(backdrop);
+}
+
+function equipFromModal(slotId,itemId){
+  const item=G.inventory.find(i=>i.id===itemId);if(!item) return;
+  if(G.equipped[slotId]) G.inventory.push(G.equipped[slotId]);
+  G.equipped[slotId]=item;G.inventory=G.inventory.filter(i=>i.id!==itemId);
+  renderEquipFull();renderGearOverlay();renderPet();renderInventory();toast(`${item.icon} ${item.name} equipped!`,'var(--accent3)');
+}
+
+function unequipItem(slotId){
+  if(G.equipped[slotId]){G.inventory.push(G.equipped[slotId]);G.equipped[slotId]=null;}
+  renderEquipFull();renderGearOverlay();renderPet();renderInventory();
+}
+
+function gainXP(amt){
+  const old=getTier();
+  G.xp+=G.xpBoostLeft>0?amt*2:amt;
+  if(G.xpBoostLeft>0) G.xpBoostLeft--;
+  const needed=XP_TABLE[Math.min(G.level,10)];
+  if(G.xp>=needed&&G.level<60){
+    G.xp-=needed;G.level++;
+    const nt=getTier();
+    if(nt!==old) showEvo(old,nt); else toast('Level up! Now Lv '+G.level,'var(--accent4)');
+  }
+  G.stars=Math.floor(G.level*15+G.xp/5);renderPet();
+}
+
+function takeDamage(amt,source){
+  G.hp=Math.max(0,G.hp-amt);
+  const el=document.getElementById('petArt');el.classList.add('hurt');setTimeout(()=>el.classList.remove('hurt'),500);
+  renderPet();
+  if(G.hp<=0&&G.level>1){
+    if(G.levelShield){G.levelShield=false;G.hp=Math.round(G.maxHp*0.2);toast('Level Shield blocked level loss!','var(--accent3)');renderPet();return;}
+    showLevelDown(source);
+  }
+}
+
+function showLevelDown(source){
+  G.level=Math.max(1,G.level-1);G.xp=0;G.hp=Math.round(totalMaxHp()*0.5);
+  const d=document.createElement('div');d.className='leveldown-screen';
+  d.innerHTML=`<div style="font-size:68px">💔</div><div style="font-size:20px;font-weight:800;color:#fff">Level Down!</div><div style="font-size:13px;color:#fca5a5;max-width:260px">${G.petName} was weakened by ${source} and dropped to Lv ${G.level}.</div><div style="font-size:11px;color:#fca5a5">Buy a Level Shield 💎 to prevent this!</div><button class="btn" style="background:#fff;color:#111;margin-top:14px" onclick="this.parentElement.remove();renderPet()">Recover</button>`;
+  document.body.appendChild(d);
+}
+
+function showEvo(from,to){
+  const d=document.createElement('div');d.className='evo-screen';
+  d.innerHTML=`<div style="font-size:68px;animation:shrink .5s ease forwards">${getPetEmoji()}</div><div style="font-size:30px;font-weight:800;color:var(--accent3);letter-spacing:2px">EVOLVED!</div><div style="font-size:84px;animation:grow .6s ease forwards">${getPetEmoji()}</div><div style="font-size:15px;font-weight:700;color:var(--accent3)">${G.petName} became a ${to}!</div><button class="btn btn-primary" style="margin-top:11px" onclick="this.parentElement.remove()">Awesome!</button>`;
+  document.body.appendChild(d);
+}
+
+function showDrop(item){
+  const rc={common:'#9ca3af',rare:'#06b6d4',epic:'#7c3aed',legendary:'#f59e0b'};
+  const d=document.createElement('div');d.className='drop-screen';
+  d.innerHTML=`<div style="font-size:12px;font-weight:700;color:${rc[item.rarity]||'#fff'};text-transform:uppercase;letter-spacing:2px">${item.rarity} drop!</div><div class="drop-item">${item.icon}</div><div style="font-size:16px;font-weight:700">${item.name}</div><div style="font-size:11px;color:var(--text2)">${item.desc}</div><div style="font-size:11px;color:var(--accent4)">ATK+${item.atk} DEF+${item.def} HP+${item.hp}</div><button class="btn btn-primary" style="margin-top:14px" onclick="this.parentElement.remove()">Collect!</button>`;
+  document.body.appendChild(d);
+}
+
+function rollDrop(luck=1){
+  if(Math.random()>0.35*luck) return null;
+  const pool=DROP_POOL;const weights=[40,40,20,20,10,10,5];
+  let total=0;weights.forEach(w=>total+=w);let roll=Math.random()*total;
+  for(let i=0;i<pool.length;i++){roll-=weights[i];if(roll<=0){const item={...pool[i],id:pool[i].id+'_'+Date.now()};G.inventory.push(item);setTimeout(()=>showDrop(item),1200);return item;}}
+  return null;
+}
+
+function tickStats(){
+  G.hunger=clamp(G.hunger-2);G.happy=clamp(G.happy-1.5);G.energy=clamp(G.energy-1);G.clean=clamp(G.clean-0.8);
+  if(G.hunger<15||G.happy<10||G.clean<10){G.hp=Math.max(1,G.hp-3);}
+  if(G.hunger<15&&!G.busy) askClaude(`I am starving (hunger=${Math.round(G.hunger)}%). React urgently in 1 sentence.`);
+  renderPet();
+}
+
+let actCD=false;
+async function doAction(action){
+  if(G.busy||actCD) return;
+  actCD=true;setTimeout(()=>actCD=false,1500);
+  const mods={feed:{hunger:25,happy:5,xp:5,heal:8},play:{happy:20,energy:-15,hunger:-8,xp:12},sleep:{energy:35,hunger:-5,xp:8,heal:10},clean:{clean:30,happy:5,xp:6,heal:5}};
+  const m=mods[action];
+  Object.entries(m).forEach(([k,v])=>{if(k==='xp') gainXP(v);else if(k==='heal') G.hp=Math.min(G.maxHp,G.hp+v);else G[k]=clamp(G[k]+v);});
+  G.gold+=1;syncCurrency();
+  const el=document.getElementById('petArt');el.classList.add('bounce');setTimeout(()=>el.classList.remove('bounce'),600);
+  renderPet();
+  await askClaude(`Your trainer just did: ${action}. hunger=${Math.round(G.hunger)}%, happy=${Math.round(G.happy)}%, energy=${Math.round(G.energy)}%. React in 1 short sentence.`);
+}
+
+
+async function askClaude(prompt){
+  if(G.busy) return;G.busy=true;
+  const bubble=document.getElementById('speechBubble');
+  bubble.innerHTML=`<span class="speech-mood">${getMoodEmoji()}</span><em style="color:var(--text2)">...</em>`;
+  const a=getAnimal(),tier=getTier();
+  const tp={Fire:'bold and fiery',Dark:'mysterious and brooding',Swift:'cheeky and quick',Earth:'calm and grumpy',Wind:'cheerful and flighty',Water:'curious and bubbly',Legendary:'dramatic and noble',Magic:'whimsical and sparkly',Storm:'intense and energetic',Ice:'cool and chill'};
+  const sys=`You are ${G.petName}, a ${tier}-stage ${a.name} (${a.type} type), level ${G.level}. Trainer: ${G.trainer}. hunger=${Math.round(G.hunger)}%, happy=${Math.round(G.happy)}%, energy=${Math.round(G.energy)}%, clean=${Math.round(G.clean)}%, HP=${Math.round(G.hp)}/${G.maxHp}. Personality: ${tp[a.type]||'friendly'}. Max 18 words, first person, no emoji in text.`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:60,system:sys,messages:[{role:'user',content:prompt}]})});
+    const data=await res.json();const reply=data.content?.[0]?.text?.trim()||'...';
+    bubble.innerHTML=`<span class="speech-mood">${getMoodEmoji()}</span>${reply}`;
+  }catch(e){bubble.innerHTML=`<span class="speech-mood">${getMoodEmoji()}</span>*static*`;}
+  G.busy=false;
+}
+
+async function getHabitReaction(habit,success){
+  const prompt=`Trainer ${G.trainer} just ${success?'completed':'failed'} habit "${habit.name}" (${habit.type}, ${habit.diff}). Pet ${G.petName} ${success?'gained HP':'lost HP'}. React in 1 sentence. ${success?'Be celebratory':'Be supportive, not harsh'}.`;
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:60,messages:[{role:'user',content:prompt}]})});
+    const d=await r.json();return d.content?.[0]?.text?.trim()||'Keep going!';
+  }catch(e){return success?'Amazing!':'You got this!';}
+}
+
+function toggleHabitForm(){const w=document.getElementById('habitFormWrap');w.style.display=w.style.display==='none'?'block':'none';}
+
+function addHabit(){
+  const name=document.getElementById('hName').value.trim();if(!name){toast('Enter a habit name','var(--danger)');return;}
+  const type=document.querySelector('input[name="htype"]:checked').value;
+  const diff=document.getElementById('hDiff').value;
+  const days=[...document.querySelectorAll('.day-dot.active')].map(d=>+d.dataset.day);
+  const xpMap={easy:5,medium:15,hard:30};const hpMap={easy:5,medium:15,hard:30};
+  G.habits.push({id:Date.now(),name,type,diff,xp:xpMap[diff],hpDmg:hpMap[diff],days,streak:0,todayDone:false,todayFailed:false});
+  document.getElementById('hName').value='';toggleHabitForm();renderHabits();toast('Habit added! Pet is watching','var(--accent4)');
+}
+
+function renderHabits(){
+  const list=document.getElementById('habitList');const empty=document.getElementById('habitEmpty');const banner=document.getElementById('habitStreakBanner');
+  if(!G.habits.length){list.innerHTML='';empty.style.display='block';banner.style.display='none';return;}
+  empty.style.display='none';
+  const ms=Math.max(...G.habits.map(h=>h.streak),0);
+  banner.style.display=ms>0?'block':'none';if(ms>0) document.getElementById('streakNum').textContent=ms;
+  list.innerHTML='';
+  G.habits.forEach(h=>{
+    const div=document.createElement('div');div.className='habit-item';
+    const tStyle=h.type==='build'?'background:#d1fae533;color:#34d399':'background:#fee2e233;color:#f87171';
+    div.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+      <div>
+        <div style="font-size:13px;font-weight:600">${h.name}</div>
+        <div style="font-size:10px;color:var(--text2);margin-top:2px">${h.streak>0?'🔥 '+h.streak+' streak · ':''} ${h.diff}</div>
+        <div style="margin-top:4px;display:flex;gap:6px">
+          <span style="font-size:10px;padding:2px 7px;border-radius:20px;background:#d1fae533;color:#34d399">✅ +${h.xp} XP on success</span>
+          <span style="font-size:10px;padding:2px 7px;border-radius:20px;background:#fee2e233;color:#f87171">❌ −${h.hpDmg} HP on fail</span>
+        </div>
+      </div>
+      <span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;${tStyle};white-space:nowrap">${h.type==='build'?'Build':'Break'}</span>
+    </div>
+    <div class="habit-btns">
+      <button class="habit-check habit-done" ${h.todayDone||h.todayFailed?'disabled':''} onclick="logHabit(${h.id},true)">${h.type==='build'?'✓ Done':'✓ Resisted'}</button>
+      <button class="habit-check habit-fail" ${h.todayDone||h.todayFailed?'disabled':''} onclick="logHabit(${h.id},false)">${h.type==='build'?'✗ Missed':'✗ Gave in'}</button>
+      <button class="habit-check" style="max-width:40px;background:var(--bg2);color:var(--danger);flex:none" onclick="G.habits=G.habits.filter(x=>x.id!==${h.id});renderHabits()">🗑</button>
+    </div>`;
+    list.appendChild(div);
+  });
+}
+
+async function logHabit(id,success){
+  const h=G.habits.find(x=>x.id===id);if(!h) return;
+  if(success){
+    h.streak++;gainXP(h.xp);G.hp=Math.min(G.maxHp,G.hp+Math.round(h.hpDmg*0.5));G.gold+=Math.floor(h.xp/2);h.todayDone=true;
+    toast(`✅ +${h.xp} XP! Pet healed +${Math.round(h.hpDmg*0.5)} HP!`,'var(--accent4)');
+    document.getElementById('petArt').classList.add('bounce');setTimeout(()=>document.getElementById('petArt').classList.remove('bounce'),600);
+  }else{
+    h.streak=0;h.todayFailed=true;takeDamage(h.hpDmg,'a failed habit');
+    toast(`❌ ${G.petName} lost ${h.hpDmg} HP!`,'var(--danger)');
+  }
+  renderPet();renderHabits();
+  const msg=await getHabitReaction(h,success);
+  document.getElementById('speechBubble').innerHTML=`<span class="speech-mood">${getMoodEmoji()}</span>${msg}`;
+}
+
+function renderBattleSetup(){
+  if(G.battleState) return;
+  const list=document.getElementById('oppList');list.innerHTML='';
+  const opps=[
+    {name:'PixelKnight',pet:'Wolf',emoji:'🐺',level:Math.max(1,G.level-2),atk:totalAtk()-2,def:totalDef()-1,hp:totalMaxHp()-10,gold:25,dropLuck:.8},
+    {name:'StarGazer',pet:'Dragon',emoji:'🐲',level:G.level,atk:totalAtk()+1,def:totalDef(),hp:totalMaxHp(),gold:40,dropLuck:1},
+    {name:'NightOwl',pet:'Fox',emoji:'🦊',level:G.level+2,atk:totalAtk()+4,def:totalDef()+2,hp:totalMaxHp()+25,gold:60,dropLuck:1.2},
+    {name:'IceDancer',pet:'Penguin',emoji:'🐧',level:G.level+5,atk:totalAtk()+8,def:totalDef()+5,hp:totalMaxHp()+60,gold:100,dropLuck:1.5},
+  ];
+  opps.forEach(o=>{
+    const d=document.createElement('div');d.className='opp-card';
+    const diff=o.level<=G.level?'<span style="font-size:10px;padding:2px 7px;border-radius:20px;background:#d1fae533;color:#34d399">Easy</span>':o.level<=G.level+3?'<span style="font-size:10px;padding:2px 7px;border-radius:20px;background:#fef3c733;color:#fbbf24">Medium</span>':'<span style="font-size:10px;padding:2px 7px;border-radius:20px;background:#fee2e233;color:#f87171">Hard</span>';
+    d.innerHTML=`<div style="display:flex;align-items:center;gap:9px"><div style="font-size:26px;line-height:1">${o.emoji}</div><div><div style="font-weight:600;font-size:12px">${o.name}'s ${o.pet}</div><div style="font-size:10px;color:var(--text2)">Lv ${o.level} · ATK ${o.atk} DEF ${o.def}</div><div style="font-size:10px;color:var(--accent3)">🪙 ${o.gold} reward</div></div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">${diff}<button class="btn btn-sm btn-primary" onclick='startBattle(${JSON.stringify(o).replace(/'/g,"&apos;")})'>Fight</button></div>`;
+    list.appendChild(d);
+  });
+}
+
+function startBattle(opp){
+  G.battleState={opp,myHp:G.hp,oppHp:opp.hp,oppMaxHp:opp.hp,defending:false,turn:0};
+  document.getElementById('battleSetup').style.display='none';
+  document.getElementById('battleArena').style.display='block';
+  document.getElementById('myFighterEmoji').textContent=getPetEmoji();
+  document.getElementById('myFighterName').textContent=G.petName+' (You)';
+  document.getElementById('oppFighterEmoji').textContent=opp.emoji;
+  document.getElementById('oppFighterName').textContent=opp.name+"'s "+opp.pet;
+  updateBattleUI();logBattle(`Battle! ${G.petName} vs ${opp.name}'s ${opp.pet}!`,'');
+}
+
+function updateBattleUI(){
+  const s=G.battleState;
+  document.getElementById('myFighterHp').textContent=`HP: ${Math.max(0,Math.round(s.myHp))}/${G.maxHp}`;
+  document.getElementById('oppFighterHp').textContent=`HP: ${Math.max(0,Math.round(s.oppHp))}/${s.oppMaxHp}`;
+  document.getElementById('myHpBar').style.width=Math.max(0,s.myHp/G.maxHp*100)+'%';
+  document.getElementById('oppHpBar').style.width=Math.max(0,s.oppHp/s.oppMaxHp*100)+'%';
+}
+
+function logBattle(msg,cls){const log=document.getElementById('battleLog');const p=document.createElement('p');p.className=cls;p.textContent=msg;log.appendChild(p);log.scrollTop=log.scrollHeight;}
+
+function battleAction(action){
+  const s=G.battleState;if(!s) return;
+  if(action==='flee'){endBattle(false,true);return;}
+  s.turn++;const crit=Math.random()<.15;let dmg=0;
+  if(action==='attack'){dmg=Math.max(1,totalAtk()-s.opp.def+Math.floor(Math.random()*8));if(crit){dmg=Math.round(dmg*1.8);logBattle(`Critical! ${G.petName} deals ${Math.round(dmg)} dmg!`,'crit');}else logBattle(`${G.petName} attacks for ${Math.round(dmg)} dmg.`,'');}
+  else if(action==='special'){dmg=Math.max(1,totalAtk()*1.6+Math.floor(Math.random()*12));logBattle(`${G.petName} uses ${getAnimal().type} blast! ${Math.round(dmg)} dmg!`,'crit');}
+  else if(action==='defend'){s.defending=true;logBattle(`${G.petName} braces for impact!`,'');}
+  s.oppHp-=dmg;if(s.oppHp<=0){endBattle(true);return;}
+  if(Math.random()<.1){logBattle(`${s.opp.name}'s pet missed!`,'miss');}
+  else{
+    let od=Math.max(1,s.opp.atk-totalDef()+Math.floor(Math.random()*6));
+    if(s.defending){od=Math.round(od*.35);s.defending=false;}
+    if(Math.random()<.12){od=Math.round(od*1.8);logBattle(`Crit! ${s.opp.name}'s pet deals ${Math.round(od)} dmg!`,'crit');}else logBattle(`${s.opp.name}'s pet deals ${Math.round(od)} dmg.`,'');
+    s.myHp-=od;G.hp=Math.max(0,G.hp-od);
+  }
+  if(s.myHp<=0){endBattle(false);return;}updateBattleUI();
+}
+
+function endBattle(won,fled=false){
+  const s=G.battleState;
+  if(won){
+    const xpG=20+s.opp.level*3;gainXP(xpG);G.gold+=s.opp.gold;syncCurrency();
+    const drop=rollDrop(s.opp.dropLuck);
+    logBattle(`Victory! +${xpG} XP · +🪙${s.opp.gold}${drop?' · '+drop.icon+' Drop!':''}!`,'win');
+    toast('Battle won! +🪙'+s.opp.gold,'var(--accent4)');
+    G.hp=Math.min(G.maxHp,G.hp+Math.round(G.maxHp*.2));
+  }else if(fled){logBattle('You fled.','miss');takeDamage(Math.round(G.maxHp*.05),'fleeing');}
+  else{logBattle('Defeated! Train harder!','lose');takeDamage(Math.round(G.maxHp*.3),'being defeated in battle');}
+  G.battleState=null;
+  setTimeout(()=>{document.getElementById('battleArena').style.display='none';document.getElementById('battleSetup').style.display='block';document.getElementById('battleLog').innerHTML='';renderBattleSetup();renderPet();},2200);
+}
+
+function initRaid(){
+  const boss=BOSSES[Math.floor(Math.random()*BOSSES.length)];
+  G.currentBoss={...boss};G.bossHp=boss.hp;G.bossMaxHp=boss.hp;G.raidDmg=0;G.raidXp=0;G.raidGold=0;renderRaid();
+}
+
+function refreshRaid(){initRaid();document.getElementById('raidLog').innerHTML='<p>A new boss appears!</p>';toast('New world boss spawned!','var(--danger)');}
+
+function renderRaid(){
+  const b=G.currentBoss;
+  document.getElementById('bossEmoji').textContent=b.emoji;document.getElementById('bossName').textContent=b.name;
+  document.getElementById('bossLevel').textContent=`World Boss · Level ${b.level}`;
+  document.getElementById('bossHpBar').style.width=Math.max(0,G.bossHp/G.bossMaxHp*100)+'%';
+  document.getElementById('bossHpText').textContent=Math.max(0,Math.round(G.bossHp));document.getElementById('bossHpMax').textContent=G.bossMaxHp;
+  document.getElementById('raidDmgTotal').textContent=Math.round(G.raidDmg);document.getElementById('raidXpEarned').textContent=G.raidXp;document.getElementById('raidGoldEarned').textContent=G.raidGold;
+  const party=document.getElementById('raidParty');party.innerHTML='';
+  [{name:G.petName,emoji:getPetEmoji()},...FAKE_PLAYERS.slice(0,4).map(p=>({name:p.name,emoji:p.emoji}))].forEach(m=>{
+    const d=document.createElement('div');d.className='party-member';d.innerHTML=`<span style="font-size:15px">${m.emoji}</span><span>${m.name}</span>`;party.appendChild(d);
+  });
+}
+
+function raidAttack(){
+  if(G.bossHp<=0){toast('Boss defeated! Get a new one.','var(--accent3)');return;}
+  const b=G.currentBoss;const log=document.getElementById('raidLog');
+  const myDmg=Math.max(5,totalAtk()*2+Math.floor(Math.random()*G.level*2));
+  const teamDmg=Math.floor(Math.random()*80+40);const totalDmg=myDmg+teamDmg;
+  G.bossHp=Math.max(0,G.bossHp-totalDmg);G.raidDmg+=totalDmg;
+  const goldE=Math.floor(totalDmg/8)+10;const xpE=Math.floor(totalDmg/10)+5;
+  G.raidXp+=xpE;G.raidGold+=goldE;gainXP(xpE);G.gold+=goldE;syncCurrency();
+  const p1=document.createElement('p');p1.textContent=`${G.petName} hits ${myDmg}! Party ${teamDmg} more. ${totalDmg} total! +🪙${goldE}`;log.appendChild(p1);
+  if(G.bossHp>0){
+    const bd=Math.max(1,Math.floor(b.atk*.25+Math.random()*8));
+    const p2=document.createElement('p');p2.style.color='var(--danger)';p2.textContent=`${b.name} retaliates! ${bd} dmg to party!`;log.appendChild(p2);
+    takeDamage(Math.round(bd*.4),'the world boss');
+  }else{
+    const drop=rollDrop(2);
+    const p3=document.createElement('p');p3.style.color='var(--accent4)';p3.style.fontWeight='700';
+    p3.textContent=`BOSS DEFEATED! +${G.raidXp} XP · +🪙${G.raidGold}${drop?' · '+drop.icon+' Legendary Drop!':''}`;log.appendChild(p3);
+    toast('Raid boss defeated! Epic victory!','var(--accent3)');
+  }
+  log.scrollTop=log.scrollHeight;renderRaid();renderPet();
+}
+
+function renderShop(){
+  const panel=document.getElementById('shopPanel');panel.innerHTML='';
+  const grid=document.createElement('div');grid.className='item-grid';
+  SHOP_ITEMS.forEach(item=>{
+    const owned=G.inventory.some(i=>i.id.startsWith(item.id))||Object.values(G.equipped).some(e=>e&&e.id.startsWith(item.id));
+    const can=G.gold>=item.cost;
+    const d=document.createElement('div');d.className=`item-card rarity-${item.rarity}`;
+    d.innerHTML=`<div class="item-icon">${item.icon}</div><div class="item-name">${item.name}</div><div class="item-desc">${item.desc}</div><div class="item-stats">ATK+${item.atk} DEF+${item.def} HP+${item.hp}</div><div style="display:flex;justify-content:space-between;align-items:center"><div class="item-price">🪙 ${item.cost}</div><button class="btn btn-sm ${can&&!owned?'btn-primary':'btn-secondary'}" ${owned||!can?'disabled':''} onclick="buyItem('${item.id}')">${owned?'Owned':can?'Buy':'Need 🪙'}</button></div>`;
+    grid.appendChild(d);
+  });
+  panel.appendChild(grid);
+}
+
+function renderPremiumShop(){
+  const panel=document.getElementById('premiumPanel');panel.innerHTML='';
+  const info=document.createElement('div');info.style.cssText='background:var(--bg2);border:1px solid var(--accent3);border-radius:var(--rad-sm);padding:9px;margin-bottom:10px;font-size:11px;color:var(--text2)';
+  info.textContent='💎 Gems earned from hard habits, victories, and raids. Use them for legendary gear and powerful boosts.';
+  panel.appendChild(info);
+  const grid=document.createElement('div');grid.className='item-grid';
+  PREMIUM_ITEMS.forEach(item=>{
+    const can=G.gems>=item.cost;
+    const d=document.createElement('div');d.className=`item-card rarity-${item.rarity}`;
+    d.innerHTML=`<div class="item-icon">${item.icon}</div><div class="item-name">${item.name}</div><div class="item-desc">${item.desc}</div>${item.atk||item.def||item.hp?`<div class="item-stats">ATK+${item.atk} DEF+${item.def} HP+${item.hp}</div>`:''}<div style="display:flex;justify-content:space-between;align-items:center"><div class="item-price">💎 ${item.cost}</div><button class="btn btn-sm btn-premium" ${!can?'disabled':''} onclick="buyPremium('${item.id}')">${can?'Buy':'Need 💎'}</button></div>`;
+    grid.appendChild(d);
+  });
+  panel.appendChild(grid);
+}
+
+function buyItem(itemId){
+  const item=SHOP_ITEMS.find(i=>i.id===itemId);if(!item) return;
+  if(G.gold<item.cost){toast('Not enough gold!','var(--danger)');return;}
+  G.gold-=item.cost;G.inventory.push({...item,id:item.id+'_'+Date.now()});syncCurrency();
+  toast(`${item.icon} ${item.name} added to inventory!`,'var(--accent4)');renderShop();renderInventory();
+}
+
+function buyPremium(itemId){
+  const item=PREMIUM_ITEMS.find(i=>i.id===itemId);if(!item) return;
+  if(G.gems<item.cost){toast('Not enough gems!','var(--danger)');return;}
+  G.gems-=item.cost;syncCurrency();
+  if(item.special==='xpboost'){G.xpBoostLeft=10;toast('XP Boost active for 10 actions!','var(--accent3)');}
+  else if(item.special==='revive'){G.hp=G.maxHp;renderPet();toast(`${G.petName} fully restored!`,'var(--accent4)');}
+  else if(item.special==='levelshield'){G.levelShield=true;toast('Level Shield active!','var(--accent3)');}
+  else{G.inventory.push({...item,id:item.id+'_'+Date.now()});toast(`${item.icon} ${item.name} added!`,'var(--accent4)');}
+  renderPremiumShop();renderInventory();
+}
+
+function renderInventory(){
+  const panel=document.getElementById('inventoryPanel');panel.innerHTML='';
+  const eqItems=Object.entries(G.equipped).filter(([,v])=>v).map(([slot,item])=>({...item,_equippedIn:slot}));
+  const allItems=[...eqItems,...G.inventory];
+  if(!allItems.length){panel.innerHTML='<div style="color:var(--text2);font-size:13px;text-align:center;padding:28px 0">No items yet. Win battles & raids for drops, or buy from the shop!</div>';return;}
+  allItems.forEach(item=>{
+    const isEq=!!item._equippedIn;
+    const d=document.createElement('div');d.className='inv-item';
+    d.innerHTML=`<div style="display:flex;align-items:center;gap:9px"><div style="font-size:22px;line-height:1">${item.icon}</div><div><div style="font-size:12px;font-weight:600">${item.name}</div><div style="font-size:10px;color:var(--text2)">${item.desc}</div><div style="font-size:10px;color:var(--accent4)">ATK+${item.atk} DEF+${item.def} HP+${item.hp}</div>${isEq?`<div style="font-size:10px;color:var(--accent);font-style:italic">Equipped (${item._equippedIn})</div>`:''}</div></div>${item.slot?`<button class="btn btn-sm ${isEq?'btn-secondary':'btn-primary'}" onclick="openEquipModal('${item.slot||item._equippedIn}')">${isEq?'Swap':'Equip'}</button>`:``}`;
+    panel.appendChild(d);
+  });
+}
+
+function switchShopTab(tab,btn){
+  document.querySelectorAll('.shop-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+  document.getElementById('shopPanel').style.display=tab==='shop'?'block':'none';
+  document.getElementById('inventoryPanel').style.display=tab==='inventory'?'block':'none';
+  document.getElementById('premiumPanel').style.display=tab==='premium'?'block':'none';
+}
+
+function renderLeaderboard(){
+  const list=document.getElementById('lbList');list.innerHTML='';
+  const all=[{name:G.trainer,pet:G.petName,emoji:getPetEmoji(),tier:getTier(),level:G.level,stars:G.stars,isYou:true},...FAKE_PLAYERS].sort((a,b)=>b.stars-a.stars);
+  const rc=['gold','silver','bronze'];
+  all.forEach((p,i)=>{
+    const d=document.createElement('div');d.className='lb-item';if(p.isYou) d.style.border='1px solid var(--accent)';
+    d.innerHTML=`<div class="lb-rank ${rc[i]||''}">${i+1}</div><div style="font-size:22px;line-height:1">${p.emoji}</div><div style="flex:1"><div style="font-size:13px;font-weight:600">${p.name}${p.isYou?' (You)':''}</div><div style="font-size:10px;color:var(--text2)">${p.pet} · Lv ${p.level} · ${p.tier}</div></div><div style="font-size:13px;font-weight:700;color:var(--accent)">⭐ ${p.stars}</div>`;
+    list.appendChild(d);
+  });
+}
+
+initAnimalGrid();
+</script>
+</body>
+</html>

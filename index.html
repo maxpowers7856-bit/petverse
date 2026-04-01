@@ -52,16 +52,17 @@ h2{font-size:18px;font-weight:600}h3{font-size:15px;font-weight:600}
 .pet-header{background:var(--bg1);padding:12px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
 .cur-pill{display:flex;align-items:center;gap:4px;background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:4px 9px;font-size:12px;font-weight:700}
 .pet-gear-overlay{position:absolute;inset:0;pointer-events:none;display:flex;align-items:center;justify-content:center}
-.gear-weapon{position:absolute;bottom:28px;right:16px;font-size:22px;line-height:1;filter:drop-shadow(0 0 4px rgba(245,158,11,.6))}
-.gear-armor{position:absolute;bottom:28px;left:16px;font-size:22px;line-height:1;filter:drop-shadow(0 0 4px rgba(6,182,212,.5))}
-.gear-accessory{position:absolute;top:36px;right:16px;font-size:18px;line-height:1}
-.gear-charm{position:absolute;top:36px;left:16px;font-size:18px;line-height:1}
+.pet-emoji-wrap{position:relative;width:110px;height:110px;display:flex;align-items:center;justify-content:center}
+.gear-weapon{position:absolute;bottom:8px;right:12px;font-size:22px;line-height:1;filter:drop-shadow(0 0 4px rgba(245,158,11,.6))}
+.gear-armor{position:absolute;bottom:8px;left:12px;font-size:22px;line-height:1;filter:drop-shadow(0 0 4px rgba(6,182,212,.5))}
+.gear-accessory{position:absolute;top:8px;right:12px;font-size:18px;line-height:1}
+.gear-charm{position:absolute;top:8px;left:12px;font-size:18px;line-height:1}
 .speech-bubble-wrap{width:100%;position:relative}
 .speech-pet{background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:10px 14px;font-size:12px;text-align:center;min-height:36px;display:flex;align-items:center;justify-content:center;line-height:1.5;width:100%;color:var(--text);font-style:italic;position:relative}
 .speech-pet::before{content:'';position:absolute;top:-8px;left:50%;transform:translateX(-50%);border:5px solid transparent;border-bottom-color:var(--border)}
 .speech-pet::after{content:'';position:absolute;top:-6px;left:50%;transform:translateX(-50%);border:4px solid transparent;border-bottom-color:var(--card)}
 .speech-mood{position:absolute;top:-10px;right:10px;font-size:16px;line-height:1}
-.pet-display{background:var(--bg2);border-radius:var(--rad);margin:10px;display:flex;flex-direction:column;align-items:center;padding:14px;gap:10px;position:relative;min-height:165px}
+.pet-display{background:var(--bg2);border-radius:var(--rad);margin:10px 10px 0;display:flex;flex-direction:column;align-items:center;padding:14px;gap:0;position:relative;min-height:130px}
 .equip-full-slots{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
 .equip-full-slot{background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:14px;cursor:pointer;transition:border-color .15s;display:flex;align-items:center;gap:12px}
 .equip-full-slot:hover{border-color:var(--accent)}
@@ -167,6 +168,9 @@ h2{font-size:18px;font-weight:600}h3{font-size:15px;font-weight:600}
     <div class="animal-grid" id="animalGrid"></div>
     <div style="margin-top:10px"><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px">Pet name</label><input id="petNameInput" placeholder="Enter a name..." maxlength="16"></div>
     <div style="margin-top:7px"><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px">Your trainer name</label><input id="trainerNameInput" placeholder="Your name..." maxlength="16"></div>
+    <div id="save-found-banner" style="display:none;background:#d1fae533;border:1px solid #34d399;border-radius:var(--rad-sm);padding:10px 14px;margin-bottom:10px;font-size:12px;color:#34d399;text-align:center">
+      ✅ Save found! Entering your name will load your existing pet.
+    </div>
     <button class="btn btn-primary" style="width:100%;margin-top:13px;padding:13px;font-size:15px" onclick="startGame()">Begin Journey ✨</button>
   </div>
 </div>
@@ -184,18 +188,20 @@ h2{font-size:18px;font-weight:600}h3{font-size:15px;font-weight:600}
       <div class="lv-badge" id="levelBadge">Lv 1</div>
       <div class="ev-badge" id="evoBadge"></div>
       <div class="risk-badge" id="dangerBadge">⚠ At Risk</div>
-      <div class="pet-gear-overlay">
-        <div class="gear-weapon" id="gearWeapon" style="display:none"></div>
-        <div class="gear-armor" id="gearArmor" style="display:none"></div>
-        <div class="gear-accessory" id="gearAccessory" style="display:none"></div>
-        <div class="gear-charm" id="gearCharm" style="display:none"></div>
-      </div>
-      <div class="pet-art" id="petArt">🐣</div>
-      <div class="speech-bubble-wrap">
-        <div class="speech-pet" id="speechBubble">
-          <span class="speech-mood" id="speechMood"></span>
-          ...
+      <div class="pet-emoji-wrap">
+        <div class="pet-gear-overlay">
+          <div class="gear-weapon" id="gearWeapon" style="display:none"></div>
+          <div class="gear-armor" id="gearArmor" style="display:none"></div>
+          <div class="gear-accessory" id="gearAccessory" style="display:none"></div>
+          <div class="gear-charm" id="gearCharm" style="display:none"></div>
         </div>
+        <div class="pet-art" id="petArt">🐣</div>
+      </div>
+    </div>
+    <div class="speech-bubble-wrap" style="margin:0 10px 8px">
+      <div class="speech-pet" id="speechBubble">
+        <span class="speech-mood" id="speechMood"></span>
+        ...
       </div>
     </div>
     <div class="xp-row">
@@ -283,6 +289,11 @@ h2{font-size:18px;font-weight:600}h3{font-size:15px;font-weight:600}
   </div>
 
   <div id="tab-raid" class="tab-content" style="display:none;padding:13px 13px 65px">
+    <div class="shop-tabs" style="margin-bottom:12px">
+      <button class="shop-tab active" onclick="switchRaidTab('raid',this)">Raid</button>
+      <button class="shop-tab" onclick="switchRaidTab('leaderboard',this)">Leaderboard</button>
+    </div>
+    <div id="raidPanel">
     <h2 style="margin-bottom:11px">World Raid</h2>
     <div class="boss-card">
       <span class="boss-emoji" id="bossEmoji">👹</span>
@@ -293,6 +304,13 @@ h2{font-size:18px;font-weight:600}h3{font-size:15px;font-weight:600}
     </div>
     <div class="sec-title">Raid Party</div><div class="raid-party" id="raidParty"></div>
     <div class="sec-title">Raid Log</div><div class="raid-log" id="raidLog"><p>Gather your party and strike!</p></div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--rad-sm);padding:10px 12px;margin-bottom:9px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+        <span style="font-size:11px;color:var(--text2)">❤️ <span id="raidPetName">Your pet</span></span>
+        <span style="font-size:11px;font-weight:700" id="raidHpText">100 / 100</span>
+      </div>
+      <div class="bar-wrap"><div class="bar-fill" id="raidHpBar" style="background:#10b981;width:100%"></div></div>
+    </div>
     <div style="display:flex;gap:7px;margin-bottom:11px">
       <button class="btn btn-danger" style="flex:1" onclick="raidAttack()">⚔️ Strike Boss</button>
       <button class="btn btn-secondary" onclick="refreshRaid()">🔄 New</button>
@@ -302,58 +320,66 @@ h2{font-size:18px;font-weight:600}h3{font-size:15px;font-weight:600}
       <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px"><span>XP earned</span><span style="font-weight:700;color:var(--accent4)" id="raidXpEarned">0</span></div>
       <div style="display:flex;justify-content:space-between;font-size:12px"><span>Gold earned</span><span style="font-weight:700;color:var(--accent3)" id="raidGoldEarned">0</span></div>
     </div>
+    </div>
+    <div id="leaderboardPanel" style="display:none">
+      <h2 style="margin-bottom:11px">Leaderboard</h2><div id="lbList"></div>
+    </div>
   </div>
 
   <div id="tab-shop" class="tab-content" style="display:none;padding:13px 13px 65px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:11px">
-      <h2>Gear</h2>
+      <h2>Shop</h2>
       <div style="display:flex;gap:6px">
         <div class="cur-pill">🪙 <span id="goldCount2">0</span></div>
         <div class="cur-pill">💎 <span id="gemCount2">0</span></div>
       </div>
     </div>
     <div class="shop-tabs">
-      <button class="shop-tab active" onclick="switchShopTab('shop',this)">Shop</button>
-      <button class="shop-tab" onclick="switchShopTab('inventory',this)">Inventory</button>
+      <button class="shop-tab active" onclick="switchShopTab('shop',this)">Items</button>
       <button class="shop-tab" onclick="switchShopTab('premium',this)">Premium 💎</button>
     </div>
     <div id="shopPanel"></div>
-    <div id="inventoryPanel" style="display:none"></div>
     <div id="premiumPanel" style="display:none"></div>
   </div>
 
-  <div id="tab-equip" class="tab-content" style="display:none;padding:13px 13px 65px">
+  <div id="tab-gear" class="tab-content" style="display:none;padding:13px 13px 65px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-      <h2>Equipment</h2>
+      <h2>Gear</h2>
       <div style="display:flex;gap:6px">
         <div class="cur-pill">🪙 <span id="goldCount3">0</span></div>
         <div class="cur-pill">💎 <span id="gemCount3">0</span></div>
       </div>
     </div>
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--rad-sm);padding:9px;margin-bottom:14px;font-size:11px;color:var(--text2)">
-      Tap a slot to equip or swap gear. Items drop from battles and raids, or buy them in the Gear tab.
+    <div class="shop-tabs" style="margin-bottom:12px">
+      <button class="shop-tab active" onclick="switchGearTab('equip',this)">Equipped</button>
+      <button class="shop-tab" onclick="switchGearTab('inventory',this)">Inventory</button>
     </div>
-    <div id="equipFullSlots" class="equip-full-slots"></div>
-    <div class="sec-title" style="margin-top:4px">Active bonuses</div>
-    <div class="card" id="equipBonusCard">
-      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px"><span>Total ATK bonus</span><span style="font-weight:700;color:var(--accent4)" id="eqAtkBonus">+0</span></div>
-      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px"><span>Total DEF bonus</span><span style="font-weight:700;color:var(--accent4)" id="eqDefBonus">+0</span></div>
-      <div style="display:flex;justify-content:space-between;font-size:12px"><span>Total HP bonus</span><span style="font-weight:700;color:var(--accent4)" id="eqHpBonus">+0</span></div>
+    <div id="gearEquipPanel">
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--rad-sm);padding:9px;margin-bottom:14px;font-size:11px;color:var(--text2)">
+        Tap a slot to equip or swap gear. Items drop from battles and raids, or buy them in the Shop.
+      </div>
+      <div id="equipFullSlots" class="equip-full-slots"></div>
+      <div class="sec-title" style="margin-top:4px">Active bonuses</div>
+      <div class="card" id="equipBonusCard">
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px"><span>Total ATK bonus</span><span style="font-weight:700;color:var(--accent4)" id="eqAtkBonus">+0</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px"><span>Total DEF bonus</span><span style="font-weight:700;color:var(--accent4)" id="eqDefBonus">+0</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:12px"><span>Total HP bonus</span><span style="font-weight:700;color:var(--accent4)" id="eqHpBonus">+0</span></div>
+      </div>
+    </div>
+    <div id="gearInventoryPanel" style="display:none">
+      <div id="inventoryPanel"></div>
     </div>
   </div>
 
-  <div id="tab-social" class="tab-content" style="display:none;padding:13px 13px 65px">
-    <h2 style="margin-bottom:11px">Leaderboard</h2><div id="lbList"></div>
-  </div>
+  <div id="tab-social" style="display:none"><div id="lbList-unused"></div></div>
 
   <nav class="nav">
     <button class="nav-btn active" onclick="switchTab('pet',this)"><span class="nav-icon">🐾</span><span>Pet</span></button>
     <button class="nav-btn" onclick="switchTab('habits',this)"><span class="nav-icon">✅</span><span>Habits</span></button>
     <button class="nav-btn" onclick="switchTab('battle',this)"><span class="nav-icon">⚔️</span><span>Battle</span></button>
     <button class="nav-btn" onclick="switchTab('raid',this)"><span class="nav-icon">👹</span><span>Raid</span></button>
-    <button class="nav-btn" onclick="switchTab('equip',this)"><span class="nav-icon">🗡️</span><span>Equip</span></button>
-    <button class="nav-btn" onclick="switchTab('shop',this)"><span class="nav-icon">🏪</span><span>Gear</span></button>
-    <button class="nav-btn" onclick="switchTab('social',this)"><span class="nav-icon">🏆</span><span>Rank</span></button>
+    <button class="nav-btn" onclick="switchTab('gear',this)"><span class="nav-icon">🗡️</span><span>Gear</span></button>
+    <button class="nav-btn" onclick="switchTab('shop',this)"><span class="nav-icon">🏪</span><span>Shop</span></button>
   </nav>
 </div>
 
@@ -405,13 +431,8 @@ const BOSSES=[
   {name:'Void Serpent',emoji:'🐍',hp:4200,atk:22,level:45},
   {name:'Lava King',emoji:'🌋',hp:8000,atk:40,level:80},
 ];
-const FAKE_PLAYERS=[
-  {name:'PixelKnight',pet:'Wolf',emoji:'🐺',tier:'Adult',level:28,stars:340},
-  {name:'StarGazer',pet:'Dragon',emoji:'🐉',tier:'Adult',level:31,stars:412},
-  {name:'NightOwl',pet:'Fox',emoji:'🦊',tier:'Teen',level:14,stars:180},
-  {name:'IceDancer',pet:'Penguin',emoji:'🐧',tier:'Legend',level:52,stars:890},
-  {name:'ThunderBolt',pet:'Tiger',emoji:'🐯',tier:'Adult',level:27,stars:315},
-];
+
+
 
 let G={
   started:false,trainer:'',petName:'',animalId:'dragon',
@@ -423,7 +444,7 @@ let G={
   inventory:[],equipped:{weapon:null,armor:null,accessory:null,charm:null},
   raidDmg:0,raidXp:0,raidGold:0,
   currentBoss:null,bossHp:5000,bossMaxHp:5000,
-  battleState:null,busy:false,
+  battleState:null,
   xpBoostLeft:0,levelShield:false,
 };
 let selAnimal='dragon';
@@ -453,6 +474,10 @@ function initAnimalGrid(){
 }
 
 function startGame(){
+  if(window._fbStartGame) window._fbStartGame();
+  else _localStartGame();
+}
+function _localStartGame(){
   const pn=document.getElementById('petNameInput').value.trim();
   const tn=document.getElementById('trainerNameInput').value.trim();
   if(!pn||!tn){toast('Fill in all fields','var(--danger)');return;}
@@ -466,9 +491,8 @@ function startGame(){
   },400);
   renderPet();renderEquipFull();renderBattleSetup();initRaid();renderLeaderboard();
   document.querySelectorAll('.day-dot').forEach(d=>d.onclick=()=>d.classList.toggle('active'));
-  askClaude(`You just hatched for trainer ${tn}! Introduce yourself as ${G.petName} the ${a.name} in 1 excited sentence.`);
-  setTimeout(()=>autoSpeak(),3000);
-  setInterval(tickStats,10000);
+  setSpeech('idle');
+  setTimeout(()=>autoSpeak(),3000);  setInterval(tickStats,10000);
   setInterval(()=>{G.gold+=2;syncCurrency();},8000);
   setInterval(autoSpeak,25000);
 }
@@ -479,9 +503,29 @@ function switchTab(tab,btn){
   document.getElementById('tab-'+tab).style.display='block';btn.classList.add('active');
   if(tab==='habits') renderHabits();
   if(tab==='battle') renderBattleSetup();
-  if(tab==='shop'){renderShop();renderInventory();renderPremiumShop();}
+  if(tab==='shop'){renderShop();renderPremiumShop();}
+  if(tab==='gear'){renderEquipFull();renderInventory();}
+}
+
+function switchShopTab(tab,btn){
+  document.querySelectorAll('#tab-shop .shop-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+  document.getElementById('shopPanel').style.display=tab==='shop'?'block':'none';
+  document.getElementById('premiumPanel').style.display=tab==='premium'?'block':'none';
+}
+
+function switchGearTab(tab,btn){
+  document.querySelectorAll('#tab-gear .shop-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+  document.getElementById('gearEquipPanel').style.display=tab==='equip'?'block':'none';
+  document.getElementById('gearInventoryPanel').style.display=tab==='inventory'?'block':'none';
+  if(tab==='inventory') renderInventory();
   if(tab==='equip') renderEquipFull();
-  if(tab==='social') renderLeaderboard();
+}
+
+function switchRaidTab(tab,btn){
+  document.querySelectorAll('#tab-raid .shop-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+  document.getElementById('raidPanel').style.display=tab==='raid'?'block':'none';
+  document.getElementById('leaderboardPanel').style.display=tab==='leaderboard'?'block':'none';
+  if(tab==='leaderboard') renderLeaderboard();
 }
 
 function syncCurrency(){
@@ -550,27 +594,51 @@ function getMoodEmoji(){
   return '🙂';
 }
 
-function buildAutoSpeechPrompt(){
-  const a=getAnimal(),tier=getTier();
-  const tp={Fire:'bold and fiery',Dark:'mysterious and brooding',Swift:'cheeky and quick',Earth:'calm and grumpy',Wind:'cheerful and flighty',Water:'curious and bubbly',Legendary:'dramatic and noble',Magic:'whimsical and sparkly',Storm:'intense and energetic',Ice:'cool and chill'};
-  const eqList=Object.entries(G.equipped).filter(([,v])=>v).map(([s,e])=>e.name).join(', ')||'none';
-  const urgency=G.hunger<20?'VERY HUNGRY':G.hp<G.maxHp*0.25?'LOW HP, worried':G.happy<20?'very sad':G.energy<20?'exhausted':G.clean<20?'dirty and miserable':'feeling okay';
-  return `You are ${G.petName}, a ${tier}-stage ${a.name} (${a.type} type), level ${G.level}. Trainer: ${G.trainer}. hunger=${Math.round(G.hunger)}%, happy=${Math.round(G.happy)}%, energy=${Math.round(G.energy)}%, clean=${Math.round(G.clean)}%, HP=${Math.round(G.hp)}/${G.maxHp}. Equipped: ${eqList}. Current mood: ${urgency}. Personality: ${tp[a.type]||'friendly'}. Speak unprompted to your trainer in 1 short sentence (max 18 words) — comment on how you feel right now, or something that caught your attention. Be in character. No emoji in text.`;
+function getRuleBasedSpeech(context){
+  const a=getAnimal(),tier=getTier(),name=G.petName,trainer=G.trainer;
+  const pick=arr=>arr[Math.floor(Math.random()*arr.length)];
+  const pools={
+    starving:[`${name} is SO hungry... please feed me!`,`My tummy is growling. Feed me, ${trainer}!`,`I haven't eaten in forever. I need food!`,`If I don't eat soon I'm going to faint...`,`Feed me! Feed me! FEED ME!`],
+    hungry:[`I could really go for a snack right now.`,`Getting a little peckish over here, ${trainer}.`,`Is it meal time yet? I'm starting to feel it.`,`A little food would really hit the spot.`],
+    unhappy:[`I'm feeling kind of down today. Play with me?`,`Everything feels blah. Cheer me up, ${trainer}!`,`I need some fun. Can we do something?`,`My happiness is at an all-time low...`],
+    tired:[`I'm so exhausted... let me sleep, please.`,`Yawwwn. ${name} needs rest badly.`,`My eyes keep closing. I need a nap.`,`Running on empty here. Sleep time?`],
+    dirty:[`I smell terrible. Can we fix that?`,`Bath time, please. I'm grossing myself out.`,`A little cleanliness goes a long way, ${trainer}.`,`I refuse to be seen like this. Bath. Now.`],
+    lowHp:[`I'm hurting... my HP is really low.`,`Ouch. I need to recover. Take care of me!`,`Please keep me safe, ${trainer}. I'm fragile right now.`,`My body aches. I need healing.`],
+    happy:[`Life is good! I feel amazing right now.`,`${name} is thriving! Thanks, ${trainer}!`,`Best day ever. I love being your pet!`,`Everything is perfect. Don't change a thing.`,`I feel so strong and happy today!`],
+    afterFeed:[`Mmm, that hit the spot! Thank you!`,`Delicious! ${name} feels much better now.`,`Finally! My hunger is satisfied. You're the best.`,`That was exactly what I needed. More please?`],
+    afterPlay:[`That was so fun! Let's do it again!`,`Woohoo! Playing makes everything better.`,`I love it when we play together, ${trainer}!`,`${name} had a blast! I feel alive!`],
+    afterSleep:[`Ahh, I feel refreshed and ready to go!`,`That nap was everything. Fully recharged!`,`Sleep is the best. What are we doing next?`,`Woke up feeling powerful. Let's battle!`],
+    afterClean:[`Squeaky clean! I feel like a new ${a.name}.`,`Ahh, so fresh! Thanks for the bath.`,`Cleanliness is next to godliness. I'm basically a deity.`,`I smell amazing now. ${name} approved.`],
+    levelUp:[`I leveled up! ${name} is getting stronger!`,`Yes! Level ${G.level}! I can feel the power!`,`Growing stronger every day. Watch out, world!`],
+    idle:[`Just hanging out. Life is pretty good.`,`I wonder what adventure is next, ${trainer}.`,`Being a ${tier} ${a.name} is pretty great.`,`Training hard and feeling good!`,`${name} is ready for anything you throw at me.`,`The ${a.type} energy is strong in me today.`,`I've been thinking... we should battle more.`,`Do you ever wonder what's beyond this screen?`],
+  };
+  if(context==='feed') return pick(pools.afterFeed);
+  if(context==='play') return pick(pools.afterPlay);
+  if(context==='sleep') return pick(pools.afterSleep);
+  if(context==='clean') return pick(pools.afterClean);
+  if(context==='levelup') return pick(pools.levelUp);
+  if(G.hunger<15) return pick(pools.starving);
+  if(G.hunger<35) return pick(pools.hungry);
+  if(G.hp<G.maxHp*0.25) return pick(pools.lowHp);
+  if(G.energy<20) return pick(pools.tired);
+  if(G.clean<20) return pick(pools.dirty);
+  if(G.happy<25) return pick(pools.unhappy);
+  if(G.hunger>75&&G.happy>75&&G.energy>65) return pick(pools.happy);
+  return pick(pools.idle);
 }
 
-async function autoSpeak(){
-  if(G.busy) return;
-  G.busy=true;
-  const bubble=document.getElementById('speechBubble');
-  const moodEl=document.getElementById('speechMood');
-  bubble.innerHTML=`<span class="speech-mood">${getMoodEmoji()}</span><em style="color:var(--text2)">thinking...</em>`;
-  try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:60,messages:[{role:'user',content:buildAutoSpeechPrompt()}]})});
-    const data=await res.json();
-    const reply=data.content?.[0]?.text?.trim()||'...';
-    bubble.innerHTML=`<span class="speech-mood">${getMoodEmoji()}</span>${reply}`;
-  }catch(e){bubble.innerHTML=`<span class="speech-mood">${getMoodEmoji()}</span>*static*`;}
-  G.busy=false;
+function setSpeech(context){
+  const bubble=document.getElementById('speechBubble');if(!bubble) return;
+  bubble.innerHTML=`<span class="speech-mood">${getMoodEmoji()}</span>${getRuleBasedSpeech(context)}`;
+}
+
+function autoSpeak(){setSpeech('idle');}
+
+function getHabitReaction(habit,success){
+  const name=G.petName,trainer=G.trainer;
+  const good=[`${name} feels a burst of energy from your good habit!`,`Yes! ${trainer} did it! ${name} is so proud!`,`Consistency makes us both stronger. Keep it up!`,`${name} gained HP because you nailed that habit!`,`You're incredible, ${trainer}. ${name} loves you!`];
+  const bad=[`It's okay, ${trainer}. ${name} still believes in you.`,`One slip doesn't define us. Try again tomorrow!`,`${name} felt that... but we'll get through it together.`,`Don't give up! ${name} needs you at your best.`,`We all stumble. What matters is getting back up!`];
+  const arr=success?good:bad;return arr[Math.floor(Math.random()*arr.length)];
 }
 
 function openEquipModal(slotId){
@@ -611,7 +679,7 @@ function gainXP(amt){
   if(G.xp>=needed&&G.level<60){
     G.xp-=needed;G.level++;
     const nt=getTier();
-    if(nt!==old) showEvo(old,nt); else toast('Level up! Now Lv '+G.level,'var(--accent4)');
+    if(nt!==old) showEvo(old,nt); else{toast('Level up! Now Lv '+G.level,'var(--accent4)');setSpeech('levelup');}
   }
   G.stars=Math.floor(G.level*15+G.xp/5);renderPet();
 }
@@ -657,13 +725,13 @@ function rollDrop(luck=1){
 function tickStats(){
   G.hunger=clamp(G.hunger-2);G.happy=clamp(G.happy-1.5);G.energy=clamp(G.energy-1);G.clean=clamp(G.clean-0.8);
   if(G.hunger<15||G.happy<10||G.clean<10){G.hp=Math.max(1,G.hp-3);}
-  if(G.hunger<15&&!G.busy) askClaude(`I am starving (hunger=${Math.round(G.hunger)}%). React urgently in 1 sentence.`);
+  setSpeech('idle');
   renderPet();
 }
 
 let actCD=false;
-async function doAction(action){
-  if(G.busy||actCD) return;
+function doAction(action){
+  if(actCD) return;
   actCD=true;setTimeout(()=>actCD=false,1500);
   const mods={feed:{hunger:25,happy:5,xp:5,heal:8},play:{happy:20,energy:-15,hunger:-8,xp:12},sleep:{energy:35,hunger:-5,xp:8,heal:10},clean:{clean:30,happy:5,xp:6,heal:5}};
   const m=mods[action];
@@ -671,31 +739,7 @@ async function doAction(action){
   G.gold+=1;syncCurrency();
   const el=document.getElementById('petArt');el.classList.add('bounce');setTimeout(()=>el.classList.remove('bounce'),600);
   renderPet();
-  await askClaude(`Your trainer just did: ${action}. hunger=${Math.round(G.hunger)}%, happy=${Math.round(G.happy)}%, energy=${Math.round(G.energy)}%. React in 1 short sentence.`);
-}
-
-
-async function askClaude(prompt){
-  if(G.busy) return;G.busy=true;
-  const bubble=document.getElementById('speechBubble');
-  bubble.innerHTML=`<span class="speech-mood">${getMoodEmoji()}</span><em style="color:var(--text2)">...</em>`;
-  const a=getAnimal(),tier=getTier();
-  const tp={Fire:'bold and fiery',Dark:'mysterious and brooding',Swift:'cheeky and quick',Earth:'calm and grumpy',Wind:'cheerful and flighty',Water:'curious and bubbly',Legendary:'dramatic and noble',Magic:'whimsical and sparkly',Storm:'intense and energetic',Ice:'cool and chill'};
-  const sys=`You are ${G.petName}, a ${tier}-stage ${a.name} (${a.type} type), level ${G.level}. Trainer: ${G.trainer}. hunger=${Math.round(G.hunger)}%, happy=${Math.round(G.happy)}%, energy=${Math.round(G.energy)}%, clean=${Math.round(G.clean)}%, HP=${Math.round(G.hp)}/${G.maxHp}. Personality: ${tp[a.type]||'friendly'}. Max 18 words, first person, no emoji in text.`;
-  try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:60,system:sys,messages:[{role:'user',content:prompt}]})});
-    const data=await res.json();const reply=data.content?.[0]?.text?.trim()||'...';
-    bubble.innerHTML=`<span class="speech-mood">${getMoodEmoji()}</span>${reply}`;
-  }catch(e){bubble.innerHTML=`<span class="speech-mood">${getMoodEmoji()}</span>*static*`;}
-  G.busy=false;
-}
-
-async function getHabitReaction(habit,success){
-  const prompt=`Trainer ${G.trainer} just ${success?'completed':'failed'} habit "${habit.name}" (${habit.type}, ${habit.diff}). Pet ${G.petName} ${success?'gained HP':'lost HP'}. React in 1 sentence. ${success?'Be celebratory':'Be supportive, not harsh'}.`;
-  try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:60,messages:[{role:'user',content:prompt}]})});
-    const d=await r.json();return d.content?.[0]?.text?.trim()||'Keep going!';
-  }catch(e){return success?'Amazing!':'You got this!';}
+  setSpeech(action);
 }
 
 function toggleHabitForm(){const w=document.getElementById('habitFormWrap');w.style.display=w.style.display==='none'?'block':'none';}
@@ -740,7 +784,7 @@ function renderHabits(){
   });
 }
 
-async function logHabit(id,success){
+function logHabit(id,success){
   const h=G.habits.find(x=>x.id===id);if(!h) return;
   if(success){
     h.streak++;gainXP(h.xp);G.hp=Math.min(G.maxHp,G.hp+Math.round(h.hpDmg*0.5));G.gold+=Math.floor(h.xp/2);h.todayDone=true;
@@ -751,25 +795,79 @@ async function logHabit(id,success){
     toast(`❌ ${G.petName} lost ${h.hpDmg} HP!`,'var(--danger)');
   }
   renderPet();renderHabits();
-  const msg=await getHabitReaction(h,success);
+  const msg=getHabitReaction(h,success);
   document.getElementById('speechBubble').innerHTML=`<span class="speech-mood">${getMoodEmoji()}</span>${msg}`;
+}
+
+const OPPONENT_POOL=[
+  {name:'PixelKnight',pet:'Wolf',emoji:'🐺',rankMin:1,rankMax:20,atkMod:1,defMod:0,goldMod:1.0,dropLuck:0.9},
+  {name:'StarGazer',pet:'Dragon',emoji:'🐲',rankMin:5,rankMax:30,atkMod:1,defMod:1,goldMod:1.1,dropLuck:1.0},
+  {name:'NightOwl',pet:'Fox',emoji:'🦊',rankMin:1,rankMax:15,atkMod:2,defMod:0,goldMod:0.9,dropLuck:0.8},
+  {name:'IceDancer',pet:'Penguin',emoji:'🐧',rankMin:20,rankMax:60,atkMod:0,defMod:2,goldMod:1.3,dropLuck:1.1},
+  {name:'ThunderBolt',pet:'Tiger',emoji:'🐯',rankMin:10,rankMax:40,atkMod:2,defMod:1,goldMod:1.2,dropLuck:1.0},
+  {name:'MoonRider',pet:'Unicorn',emoji:'🦄',rankMin:15,rankMax:50,atkMod:1,defMod:2,goldMod:1.2,dropLuck:1.1},
+  {name:'ShadowPaw',pet:'Cat',emoji:'🐱',rankMin:1,rankMax:25,atkMod:3,defMod:0,goldMod:1.0,dropLuck:0.9},
+  {name:'GrizzKing',pet:'Bear',emoji:'🐻',rankMin:10,rankMax:45,atkMod:0,defMod:3,goldMod:1.1,dropLuck:1.0},
+  {name:'StormCrest',pet:'Duck',emoji:'🦆',rankMin:5,rankMax:30,atkMod:1,defMod:1,goldMod:1.0,dropLuck:1.0},
+  {name:'BlazeRunner',pet:'Fox',emoji:'🦊',rankMin:20,rankMax:55,atkMod:3,defMod:1,goldMod:1.3,dropLuck:1.2},
+  {name:'FrostBite',pet:'Penguin',emoji:'🐧',rankMin:15,rankMax:50,atkMod:1,defMod:3,goldMod:1.2,dropLuck:1.1},
+  {name:'WildMane',pet:'Tiger',emoji:'🐯',rankMin:25,rankMax:60,atkMod:3,defMod:2,goldMod:1.4,dropLuck:1.3},
+  {name:'DuskHowl',pet:'Wolf',emoji:'🐺',rankMin:30,rankMax:60,atkMod:2,defMod:2,goldMod:1.4,dropLuck:1.3},
+  {name:'CelestPaw',pet:'Unicorn',emoji:'🦄',rankMin:35,rankMax:60,atkMod:2,defMod:3,goldMod:1.5,dropLuck:1.4},
+  {name:'InfernoFang',pet:'Dragon',emoji:'🐉',rankMin:40,rankMax:60,atkMod:4,defMod:2,goldMod:1.6,dropLuck:1.5},
+  {name:'VoidStriker',pet:'Wolf',emoji:'🌕',rankMin:45,rankMax:60,atkMod:4,defMod:3,goldMod:1.7,dropLuck:1.6},
+  {name:'LuckyHop',pet:'Bunny',emoji:'🐰',rankMin:1,rankMax:12,atkMod:0,defMod:0,goldMod:0.8,dropLuck:0.7},
+  {name:'PebblePunch',pet:'Bear',emoji:'🐻',rankMin:1,rankMax:10,atkMod:0,defMod:1,goldMod:0.8,dropLuck:0.7},
+  {name:'GaleWing',pet:'Duck',emoji:'🦅',rankMin:30,rankMax:55,atkMod:2,defMod:1,goldMod:1.3,dropLuck:1.2},
+  {name:'ArcticFang',pet:'Wolf',emoji:'❄️',rankMin:40,rankMax:60,atkMod:3,defMod:3,goldMod:1.5,dropLuck:1.4},
+];
+
+function buildMatchups(){
+  const lv=G.level;
+  const pool=OPPONENT_POOL.filter(o=>lv>=o.rankMin&&lv<=o.rankMax);
+  if(pool.length<4){
+    const extras=OPPONENT_POOL.filter(o=>!pool.includes(o)).sort(()=>Math.random()-.5);
+    while(pool.length<4) pool.push(extras.pop()||OPPONENT_POOL[0]);
+  }
+  const shuffled=pool.sort(()=>Math.random()-.5).slice(0,4);
+  const tiers=[
+    {label:'Underdog',lvOffset:-3,atkOffset:-4,defOffset:-2,hpOffset:-20,goldBase:20},
+    {label:'Rival',lvOffset:-1,atkOffset:-1,defOffset:-1,hpOffset:-5,goldBase:35},
+    {label:'Challenger',lvOffset:2,atkOffset:3,defOffset:2,hpOffset:20,goldBase:55},
+    {label:'Champion',lvOffset:6,atkOffset:8,defOffset:5,hpOffset:50,goldBase:90},
+  ];
+  return shuffled.map((o,i)=>{
+    const t=tiers[i];
+    const oppLv=Math.max(1,lv+t.lvOffset);
+    const atk=Math.max(1,totalAtk()+t.atkOffset+o.atkMod);
+    const def=Math.max(1,totalDef()+t.defOffset+o.defMod);
+    const hp=Math.max(10,totalMaxHp()+t.hpOffset);
+    const gold=Math.round(t.goldBase*o.goldMod);
+    return{...o,tier:t.label,level:oppLv,atk,def,hp,gold};
+  });
 }
 
 function renderBattleSetup(){
   if(G.battleState) return;
   const list=document.getElementById('oppList');list.innerHTML='';
-  const opps=[
-    {name:'PixelKnight',pet:'Wolf',emoji:'🐺',level:Math.max(1,G.level-2),atk:totalAtk()-2,def:totalDef()-1,hp:totalMaxHp()-10,gold:25,dropLuck:.8},
-    {name:'StarGazer',pet:'Dragon',emoji:'🐲',level:G.level,atk:totalAtk()+1,def:totalDef(),hp:totalMaxHp(),gold:40,dropLuck:1},
-    {name:'NightOwl',pet:'Fox',emoji:'🦊',level:G.level+2,atk:totalAtk()+4,def:totalDef()+2,hp:totalMaxHp()+25,gold:60,dropLuck:1.2},
-    {name:'IceDancer',pet:'Penguin',emoji:'🐧',level:G.level+5,atk:totalAtk()+8,def:totalDef()+5,hp:totalMaxHp()+60,gold:100,dropLuck:1.5},
-  ];
+  const opps=buildMatchups();
+  const tierStyle={
+    Underdog:'background:#d1fae533;color:#34d399',
+    Rival:'background:#e0f2fe33;color:#38bdf8',
+    Challenger:'background:#fef3c733;color:#fbbf24',
+    Champion:'background:#fee2e233;color:#f87171',
+  };
   opps.forEach(o=>{
     const d=document.createElement('div');d.className='opp-card';
-    const diff=o.level<=G.level?'<span style="font-size:10px;padding:2px 7px;border-radius:20px;background:#d1fae533;color:#34d399">Easy</span>':o.level<=G.level+3?'<span style="font-size:10px;padding:2px 7px;border-radius:20px;background:#fef3c733;color:#fbbf24">Medium</span>':'<span style="font-size:10px;padding:2px 7px;border-radius:20px;background:#fee2e233;color:#f87171">Hard</span>';
-    d.innerHTML=`<div style="display:flex;align-items:center;gap:9px"><div style="font-size:26px;line-height:1">${o.emoji}</div><div><div style="font-weight:600;font-size:12px">${o.name}'s ${o.pet}</div><div style="font-size:10px;color:var(--text2)">Lv ${o.level} · ATK ${o.atk} DEF ${o.def}</div><div style="font-size:10px;color:var(--accent3)">🪙 ${o.gold} reward</div></div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">${diff}<button class="btn btn-sm btn-primary" onclick='startBattle(${JSON.stringify(o).replace(/'/g,"&apos;")})'>Fight</button></div>`;
+    const badge=`<span style="font-size:10px;padding:2px 7px;border-radius:20px;${tierStyle[o.tier]||''}">${o.tier}</span>`;
+    d.innerHTML=`<div style="display:flex;align-items:center;gap:9px"><div style="font-size:26px;line-height:1">${o.emoji}</div><div><div style="font-weight:600;font-size:12px">${o.name}'s ${o.pet}</div><div style="font-size:10px;color:var(--text2)">Lv ${o.level} · ATK ${o.atk} DEF ${o.def}</div><div style="font-size:10px;color:var(--accent3)">🪙 ${o.gold} reward</div></div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">${badge}<button class="btn btn-sm btn-primary" onclick='startBattle(${JSON.stringify(o).replace(/'/g,"&apos;")})'>Fight</button></div>`;
     list.appendChild(d);
   });
+  const refresh=document.createElement('button');
+  refresh.className='btn btn-secondary';refresh.style.cssText='width:100%;margin-top:10px;font-size:12px';
+  refresh.textContent='🔀 Refresh opponents';
+  refresh.onclick=()=>renderBattleSetup();
+  list.appendChild(refresh);
 }
 
 function startBattle(opp){
@@ -839,8 +937,14 @@ function renderRaid(){
   document.getElementById('bossHpBar').style.width=Math.max(0,G.bossHp/G.bossMaxHp*100)+'%';
   document.getElementById('bossHpText').textContent=Math.max(0,Math.round(G.bossHp));document.getElementById('bossHpMax').textContent=G.bossMaxHp;
   document.getElementById('raidDmgTotal').textContent=Math.round(G.raidDmg);document.getElementById('raidXpEarned').textContent=G.raidXp;document.getElementById('raidGoldEarned').textContent=G.raidGold;
+  const hpPct=Math.max(0,G.hp/G.maxHp*100);
+  const hpBar=document.getElementById('raidHpBar');
+  hpBar.style.width=hpPct+'%';
+  hpBar.style.background=hpPct>50?'#10b981':hpPct>25?'#f59e0b':'#ef4444';
+  document.getElementById('raidHpText').textContent=`${Math.max(0,Math.round(G.hp))} / ${G.maxHp}`;
+  document.getElementById('raidPetName').textContent=G.petName;
   const party=document.getElementById('raidParty');party.innerHTML='';
-  [{name:G.petName,emoji:getPetEmoji()},...FAKE_PLAYERS.slice(0,4).map(p=>({name:p.name,emoji:p.emoji}))].forEach(m=>{
+  [{name:G.petName,emoji:getPetEmoji()},...OPPONENT_POOL.slice(0,4).map(p=>({name:p.name,emoji:p.emoji}))].forEach(m=>{
     const d=document.createElement('div');d.className='party-member';d.innerHTML=`<span style="font-size:15px">${m.emoji}</span><span>${m.name}</span>`;party.appendChild(d);
   });
 }
@@ -874,7 +978,7 @@ function renderShop(){
     const owned=G.inventory.some(i=>i.id.startsWith(item.id))||Object.values(G.equipped).some(e=>e&&e.id.startsWith(item.id));
     const can=G.gold>=item.cost;
     const d=document.createElement('div');d.className=`item-card rarity-${item.rarity}`;
-    d.innerHTML=`<div class="item-icon">${item.icon}</div><div class="item-name">${item.name}</div><div class="item-desc">${item.desc}</div><div class="item-stats">ATK+${item.atk} DEF+${item.def} HP+${item.hp}</div><div style="display:flex;justify-content:space-between;align-items:center"><div class="item-price">🪙 ${item.cost}</div><button class="btn btn-sm ${can&&!owned?'btn-primary':'btn-secondary'}" ${owned||!can?'disabled':''} onclick="buyItem('${item.id}')">${owned?'Owned':can?'Buy':'Need 🪙'}</button></div>`;
+    d.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px"><div class="item-icon">${item.icon}</div>${item.slot?`<span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;background:var(--bg2);color:var(--text2);border:1px solid var(--border);text-transform:uppercase;letter-spacing:.04em">${item.slot}</span>`:''}</div><div class="item-name">${item.name}</div><div class="item-desc">${item.desc}</div><div class="item-stats">ATK+${item.atk} DEF+${item.def} HP+${item.hp}</div><div style="display:flex;justify-content:space-between;align-items:center"><div class="item-price">🪙 ${item.cost}</div><button class="btn btn-sm ${can&&!owned?'btn-primary':'btn-secondary'}" ${owned||!can?'disabled':''} onclick="buyItem('${item.id}')">${owned?'Owned':can?'Buy':'Need 🪙'}</button></div>`;
     grid.appendChild(d);
   });
   panel.appendChild(grid);
@@ -889,7 +993,7 @@ function renderPremiumShop(){
   PREMIUM_ITEMS.forEach(item=>{
     const can=G.gems>=item.cost;
     const d=document.createElement('div');d.className=`item-card rarity-${item.rarity}`;
-    d.innerHTML=`<div class="item-icon">${item.icon}</div><div class="item-name">${item.name}</div><div class="item-desc">${item.desc}</div>${item.atk||item.def||item.hp?`<div class="item-stats">ATK+${item.atk} DEF+${item.def} HP+${item.hp}</div>`:''}<div style="display:flex;justify-content:space-between;align-items:center"><div class="item-price">💎 ${item.cost}</div><button class="btn btn-sm btn-premium" ${!can?'disabled':''} onclick="buyPremium('${item.id}')">${can?'Buy':'Need 💎'}</button></div>`;
+    d.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px"><div class="item-icon">${item.icon}</div>${item.slot?`<span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;background:var(--bg2);color:var(--text2);border:1px solid var(--border);text-transform:uppercase;letter-spacing:.04em">${item.slot}</span>`:''}</div><div class="item-name">${item.name}</div><div class="item-desc">${item.desc}</div>${item.atk||item.def||item.hp?`<div class="item-stats">ATK+${item.atk} DEF+${item.def} HP+${item.hp}</div>`:''}<div style="display:flex;justify-content:space-between;align-items:center"><div class="item-price">💎 ${item.cost}</div><button class="btn btn-sm btn-premium" ${!can?'disabled':''} onclick="buyPremium('${item.id}')">${can?'Buy':'Need 💎'}</button></div>`;
     grid.appendChild(d);
   });
   panel.appendChild(grid);
@@ -926,25 +1030,360 @@ function renderInventory(){
   });
 }
 
-function switchShopTab(tab,btn){
-  document.querySelectorAll('.shop-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
-  document.getElementById('shopPanel').style.display=tab==='shop'?'block':'none';
-  document.getElementById('inventoryPanel').style.display=tab==='inventory'?'block':'none';
-  document.getElementById('premiumPanel').style.display=tab==='premium'?'block':'none';
-}
+
+
 
 function renderLeaderboard(){
-  const list=document.getElementById('lbList');list.innerHTML='';
-  const all=[{name:G.trainer,pet:G.petName,emoji:getPetEmoji(),tier:getTier(),level:G.level,stars:G.stars,isYou:true},...FAKE_PLAYERS].sort((a,b)=>b.stars-a.stars);
-  const rc=['gold','silver','bronze'];
-  all.forEach((p,i)=>{
-    const d=document.createElement('div');d.className='lb-item';if(p.isYou) d.style.border='1px solid var(--accent)';
-    d.innerHTML=`<div class="lb-rank ${rc[i]||''}">${i+1}</div><div style="font-size:22px;line-height:1">${p.emoji}</div><div style="flex:1"><div style="font-size:13px;font-weight:600">${p.name}${p.isYou?' (You)':''}</div><div style="font-size:10px;color:var(--text2)">${p.pet} · Lv ${p.level} · ${p.tier}</div></div><div style="font-size:13px;font-weight:700;color:var(--accent)">⭐ ${p.stars}</div>`;
-    list.appendChild(d);
-  });
+  const list=document.getElementById('lbList');if(!list) return;
+  list.innerHTML='<div style="font-size:12px;color:var(--text2);text-align:center;padding:20px 0">Loading live leaderboard...</div>';
 }
 
 initAnimalGrid();
 </script>
-</body>
-</html>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, get, onValue, update, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAKGGNyxmgR8P0eKBfodIAMmeVGHD8XXqo",
+  authDomain: "petverse-19377.firebaseapp.com",
+  databaseURL: "https://petverse-19377-default-rtdb.firebaseio.com",
+  projectId: "petverse-19377",
+  storageBucket: "petverse-19377.firebasestorage.app",
+  messagingSenderId: "710903429148",
+  appId: "1:710903429148:web:c573eae1c89b129a0147d9"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+window.FB = {
+  db, ref, set, get, onValue, update, runTransaction,
+
+  playerKey(){return G.trainer.replace(/[^a-zA-Z0-9_]/g,'_').toLowerCase();},
+
+  async saveGame(){
+    if(!G.started||!G.trainer) return;
+    const key=this.playerKey();
+    const snapshot={
+      trainer:G.trainer, petName:G.petName, animalId:G.animalId,
+      level:G.level, xp:G.xp,
+      hunger:G.hunger, happy:G.happy, energy:G.energy, clean:G.clean,
+      baseAtk:G.baseAtk, baseDef:G.baseDef, baseHp:G.baseHp, hp:G.hp, maxHp:G.maxHp,
+      gold:G.gold, gems:G.gems, stars:G.stars,
+      habits:G.habits||[],
+      inventory:G.inventory||[],
+      equipped:G.equipped||{weapon:null,armor:null,accessory:null,charm:null},
+      xpBoostLeft:G.xpBoostLeft||0, levelShield:G.levelShield||false,
+      lastSaved: Date.now(),
+    };
+    await set(ref(db,`players/${key}`), snapshot);
+    this.updateLeaderboard();
+  },
+
+  async loadGame(trainerName){
+    const key=trainerName.replace(/[^a-zA-Z0-9_]/g,'_').toLowerCase();
+    const snap=await get(ref(db,`players/${key}`));
+    if(snap.exists()) return snap.val();
+    return null;
+  },
+
+  async updateLeaderboard(){
+    if(!G.trainer) return;
+    const key=this.playerKey();
+    await set(ref(db,`leaderboard/${key}`),{
+      trainer:G.trainer, petName:G.petName,
+      emoji:getPetEmoji(), tier:getTier(),
+      level:G.level, stars:G.stars,
+      animalId:G.animalId,
+      updatedAt:Date.now(),
+    });
+  },
+
+  listenLeaderboard(cb){
+    onValue(ref(db,'leaderboard'), snap=>{
+      const data=snap.val()||{};
+      const entries=Object.values(data).sort((a,b)=>b.stars-a.stars);
+      cb(entries);
+    });
+  },
+
+  async initSharedBoss(){
+    const snap=await get(ref(db,'worldBoss'));
+    if(!snap.exists()||snap.val().hp<=0){
+      await this.spawnNewBoss();
+    }
+    onValue(ref(db,'worldBoss'), snap=>{
+      if(!snap.exists()) return;
+      const boss=snap.val();
+      G.sharedBoss=boss;
+      updateSharedBossUI(boss);
+    });
+  },
+
+  async spawnNewBoss(){
+    const BOSSES=[
+      {name:'Shadow Titan',emoji:'👹',maxHp:50000,atk:25,level:50},
+      {name:'Frost Golem',emoji:'🧊',maxHp:35000,atk:18,level:35},
+      {name:'Storm Drake',emoji:'🌪️',maxHp:65000,atk:32,level:65},
+      {name:'Void Serpent',emoji:'🐍',maxHp:42000,atk:22,level:45},
+      {name:'Lava King',emoji:'🌋',maxHp:80000,atk:40,level:80},
+    ];
+    const boss=BOSSES[Math.floor(Math.random()*BOSSES.length)];
+    await set(ref(db,'worldBoss'),{...boss, hp:boss.maxHp, spawnedAt:Date.now(), defeatedBy:null});
+  },
+
+  async strikeSharedBoss(dmg){
+    const key=this.playerKey();
+    await runTransaction(ref(db,'worldBoss'), boss=>{
+      if(!boss||boss.hp<=0) return boss;
+      boss.hp=Math.max(0,boss.hp-dmg);
+      if(boss.hp<=0) boss.defeatedBy=G.trainer;
+      return boss;
+    });
+    await set(ref(db,`raidLog/${Date.now()}_${key}`),{
+      trainer:G.trainer, emoji:getPetEmoji(), dmg, ts:Date.now()
+    });
+    setTimeout(()=>get(ref(db,'worldBoss')).then(s=>{
+      if(s.exists()&&s.val().hp<=0) this.spawnNewBoss();
+    }),3000);
+  },
+
+  listenRaidLog(cb){
+    onValue(ref(db,'raidLog'), snap=>{
+      const data=snap.val()||{};
+      const entries=Object.values(data).sort((a,b)=>b.ts-a.ts).slice(0,20);
+      cb(entries);
+    });
+  },
+
+  async challengePlayer(targetKey){
+    const key=this.playerKey();
+    await set(ref(db,`pvp/challenges/${targetKey}`),{
+      from:G.trainer, fromKey:key,
+      fromEmoji:getPetEmoji(), fromLevel:G.level,
+      fromAtk:totalAtk(), fromDef:totalDef(), fromHp:G.maxHp,
+      ts:Date.now(), status:'pending'
+    });
+    toast(`Challenge sent to ${targetKey}!`,'var(--accent2)');
+  },
+
+  listenChallenges(cb){
+    const key=this.playerKey();
+    onValue(ref(db,`pvp/challenges/${key}`), snap=>{
+      if(snap.exists()&&snap.val().status==='pending') cb(snap.val());
+    });
+  },
+
+  async acceptChallenge(challenge){
+    const key=this.playerKey();
+    const result=simulatePvP(challenge);
+    await update(ref(db,`pvp/challenges/${key}`),{status:'resolved', result});
+    await set(ref(db,`pvp/results/${key}_${Date.now()}`),{...result, ts:Date.now()});
+    return result;
+  },
+};
+
+function simulatePvP(challenge){
+  let myHp=G.maxHp, oppHp=challenge.fromHp;
+  let turns=0;
+  while(myHp>0&&oppHp>0&&turns<50){
+    oppHp-=Math.max(1,totalAtk()-challenge.fromDef+Math.floor(Math.random()*6));
+    if(oppHp<=0) break;
+    myHp-=Math.max(1,challenge.fromAtk-totalDef()+Math.floor(Math.random()*6));
+    turns++;
+  }
+  return{winner:myHp>0?G.trainer:challenge.from, loser:myHp>0?challenge.from:G.trainer, turns};
+}
+
+function updateSharedBossUI(boss){
+  const pct=Math.max(0,boss.hp/boss.maxHp*100);
+  const hpBar=document.getElementById('bossHpBar');
+  const hpText=document.getElementById('bossHpText');
+  const hpMax=document.getElementById('bossHpMax');
+  const bossName=document.getElementById('bossName');
+  const bossEmoji=document.getElementById('bossEmoji');
+  const bossLevel=document.getElementById('bossLevel');
+  if(hpBar) hpBar.style.width=pct+'%';
+  if(hpText) hpText.textContent=Math.max(0,Math.round(boss.hp)).toLocaleString();
+  if(hpMax) hpMax.textContent=boss.maxHp.toLocaleString();
+  if(bossName) bossName.textContent=boss.name;
+  if(bossEmoji) bossEmoji.textContent=boss.emoji;
+  if(bossLevel) bossLevel.textContent=`World Boss · Level ${boss.level}`;
+  if(boss.hp<=0&&boss.defeatedBy){
+    const log=document.getElementById('raidLog');
+    if(log){const p=document.createElement('p');p.style.color='var(--accent3)';p.style.fontWeight='700';p.textContent=`${boss.defeatedBy} landed the killing blow! New boss incoming...`;log.appendChild(p);log.scrollTop=log.scrollHeight;}
+  }
+}
+
+function renderLiveLeaderboard(entries){
+  const list=document.getElementById('lbList');if(!list) return;
+  list.innerHTML='';
+  const myEntry={trainer:G.trainer,petName:G.petName,emoji:getPetEmoji(),tier:getTier(),level:G.level,stars:G.stars,isYou:true};
+  const hasMe=entries.some(e=>e.trainer===G.trainer);
+  const all=hasMe?entries:[myEntry,...entries];
+  all.sort((a,b)=>b.stars-a.stars);
+  const rc=['gold','silver','bronze'];
+  all.slice(0,20).forEach((p,i)=>{
+    const isYou=p.trainer===G.trainer||p.isYou;
+    const d=document.createElement('div');d.className='lb-item';
+    if(isYou) d.style.border='1px solid var(--accent)';
+    const challengeBtn=isYou?'':` <button class="btn btn-sm btn-danger" style="font-size:10px;padding:4px 8px" onclick="challengePlayer('${p.trainer}')">⚔️</button>`;
+    d.innerHTML=`<div class="lb-rank ${rc[i]||''}">${i+1}</div><div style="font-size:22px;line-height:1">${p.emoji||'🐾'}</div><div style="flex:1"><div style="font-size:13px;font-weight:600">${p.trainer||p.name}${isYou?' (You)':''}</div><div style="font-size:10px;color:var(--text2)">${p.petName||p.pet} · Lv ${p.level} · ${p.tier}</div></div><div style="display:flex;align-items:center;gap:6px"><div style="font-size:13px;font-weight:700;color:var(--accent)">⭐ ${p.stars}</div>${challengeBtn}</div>`;
+    list.appendChild(d);
+  });
+  if(!all.length) list.innerHTML='<div style="color:var(--text2);text-align:center;padding:24px;font-size:13px">No players yet — you\'ll appear here after saving!</div>';
+}
+
+function renderLiveRaidLog(entries){
+  const log=document.getElementById('raidLog');if(!log) return;
+  log.innerHTML='';
+  entries.slice(0,15).forEach(e=>{
+    const p=document.createElement('p');
+    const ago=Math.round((Date.now()-e.ts)/1000);
+    const agoStr=ago<60?`${ago}s ago`:`${Math.round(ago/60)}m ago`;
+    p.textContent=`${e.emoji} ${e.trainer} dealt ${e.dmg.toLocaleString()} dmg (${agoStr})`;
+    log.appendChild(p);
+  });
+}
+
+function checkIncomingChallenges(){
+  if(!G.started||!G.trainer) return;
+  window.FB.listenChallenges(async challenge=>{
+    const existing=document.getElementById('pvp-challenge-modal');
+    if(existing) return;
+    const modal=document.createElement('div');
+    modal.id='pvp-challenge-modal';
+    modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px';
+    modal.innerHTML=`<div style="background:var(--bg1);border:1px solid var(--border);border-radius:var(--rad);padding:24px;width:100%;max-width:340px;text-align:center">
+      <div style="font-size:40px;margin-bottom:8px">⚔️</div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:6px">${challenge.from} challenges you!</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:16px">Lv ${challenge.fromLevel} · ATK ${challenge.fromAtk} · DEF ${challenge.fromDef}</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary" style="flex:1" onclick="acceptPvP()">Accept</button>
+        <button class="btn btn-secondary" style="flex:1" onclick="document.getElementById('pvp-challenge-modal').remove()">Decline</button>
+      </div>
+    </div>`;
+    document.body.appendChild(modal);
+    window._pendingChallenge=challenge;
+  });
+}
+
+window.acceptPvP=async function(){
+  const challenge=window._pendingChallenge;
+  if(!challenge) return;
+  document.getElementById('pvp-challenge-modal')?.remove();
+  const result=await window.FB.acceptChallenge(challenge);
+  const won=result.winner===G.trainer;
+  if(won){gainXP(30);G.gold+=50;syncCurrency();toast(`You won the PvP battle! +30 XP +🪙50`,'var(--accent4)');}
+  else{takeDamage(Math.round(G.maxHp*.2),'a PvP loss');toast(`You lost the PvP battle...`,'var(--danger)');}
+  renderPet();
+};
+
+window.challengePlayer=function(trainerName){
+  window.FB.challengePlayer(trainerName.replace(/[^a-zA-Z0-9_]/g,'_').toLowerCase());
+};
+
+async function initFirebase(){
+  const trainerInput=document.getElementById('trainerNameInput');
+  const petInput=document.getElementById('petNameInput');
+
+  trainerInput.addEventListener('blur', async()=>{
+    const tn=trainerInput.value.trim();
+    if(!tn) return;
+    const saved=await window.FB.loadGame(tn);
+    if(saved){
+      const banner=document.getElementById('save-found-banner');
+      if(banner) banner.style.display='block';
+      window._savedGame=saved;
+    } else {
+      const banner=document.getElementById('save-found-banner');
+      if(banner) banner.style.display='none';
+      window._savedGame=null;
+    }
+  });
+
+  window.FB.listenLeaderboard(renderLiveLeaderboard);
+  window.FB.listenRaidLog(renderLiveRaidLog);
+  await window.FB.initSharedBoss();
+}
+
+window._origStartGame=window.startGame;
+window._fbStartGame=async function(){
+  const pn=document.getElementById('petNameInput').value.trim();
+  const tn=document.getElementById('trainerNameInput').value.trim();
+  if(!pn||!tn){toast('Fill in all fields','var(--danger)');return;}
+
+  if(window._savedGame){
+    const s=window._savedGame;
+    Object.assign(G,{
+      trainer:s.trainer, petName:s.petName, animalId:s.animalId,
+      level:s.level, xp:s.xp,
+      hunger:s.hunger, happy:s.happy, energy:s.energy, clean:s.clean,
+      baseAtk:s.baseAtk, baseDef:s.baseDef, baseHp:s.baseHp, hp:s.hp, maxHp:s.maxHp,
+      gold:s.gold, gems:s.gems, stars:s.stars,
+      habits:s.habits||[], inventory:s.inventory||[],
+      equipped:s.equipped||{weapon:null,armor:null,accessory:null,charm:null},
+      xpBoostLeft:s.xpBoostLeft||0, levelShield:s.levelShield||false,
+      started:true,
+    });
+    selAnimal=G.animalId;
+    toast(`Welcome back, ${G.trainer}! Save loaded.`,'var(--accent4)');
+  } else {
+    G.trainer=tn;G.petName=pn;G.animalId=selAnimal;G.started=true;
+    const a=getAnimal();G.baseAtk=10+a.atkB;G.baseDef=8+a.defB;G.maxHp=G.baseHp;G.hp=G.maxHp;
+  }
+
+  const nameScreen=document.getElementById('screen-name');
+  nameScreen.classList.add('fade-out');
+  setTimeout(()=>{nameScreen.style.display='none';document.getElementById('screen-main').classList.add('active');},400);
+
+  renderPet();renderEquipFull();renderBattleSetup();initRaid();
+  document.querySelectorAll('.day-dot').forEach(d=>d.onclick=()=>d.classList.toggle('active'));
+  setSpeech('idle');
+  setTimeout(()=>autoSpeak(),3000);
+  setInterval(tickStats,10000);
+  setInterval(()=>{G.gold+=2;syncCurrency();},8000);
+  setInterval(autoSpeak,25000);
+  setInterval(()=>window.FB.saveGame(),30000);
+
+  await window.FB.saveGame();
+  checkIncomingChallenges();
+};
+
+window._origGainXP=window.gainXP;
+const _origGainXP=gainXP;
+window.addEventListener('petverse-save', ()=>window.FB?.saveGame());
+
+function patchSaveHooks(){
+  const orig_gainXP=gainXP;
+  const orig_takeDamage=takeDamage;
+  const orig_logHabit=logHabit;
+  const orig_endBattle=endBattle;
+}
+
+window._origRaidAttack=window.raidAttack;
+window.raidAttack=function(){
+  if(!G.sharedBoss||G.sharedBoss.hp<=0){toast('Boss defeated! Wait for the next one.','var(--accent3)');return;}
+  const b=G.sharedBoss;
+  const myDmg=Math.max(5,totalAtk()*2+Math.floor(Math.random()*G.level*2));
+  const teamDmg=Math.floor(Math.random()*80+40);
+  const totalDmg=myDmg+teamDmg;
+  G.raidDmg+=totalDmg;
+  const goldE=Math.floor(totalDmg/8)+10;
+  const xpE=Math.floor(totalDmg/10)+5;
+  G.raidXp+=xpE;G.raidGold+=goldE;
+  gainXP(xpE);G.gold+=goldE;syncCurrency();
+  const bossDmg=Math.max(1,Math.floor(b.atk*.25+Math.random()*8));
+  takeDamage(Math.round(bossDmg*.4),'the world boss');
+  document.getElementById('raidDmgTotal').textContent=Math.round(G.raidDmg);
+  document.getElementById('raidXpEarned').textContent=G.raidXp;
+  document.getElementById('raidGoldEarned').textContent=G.raidGold;
+  renderPet();renderRaid();
+  window.FB.strikeSharedBoss(totalDmg);
+  window.FB.saveGame();
+};
+
+initFirebase();
+</script>

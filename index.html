@@ -1151,14 +1151,23 @@ function renderInventory(){
   const eqItems=Object.entries(G.equipped).filter(([,v])=>v).map(([slot,item])=>({...item,_equippedIn:slot}));
   const allItems=[...eqItems,...G.inventory];
   if(!allItems.length){panel.innerHTML='<div style="color:var(--text2);font-size:13px;text-align:center;padding:28px 0">No items yet. Win battles & raids for drops, or buy from the shop!</div>';return;}
+  const rarityStyle={
+    common:  {bg:'#d3d3d333',color:'#9ca3af',border:'#9ca3af44',icon:'○'},
+    rare:    {bg:'#e0f2fe33',color:'#38bdf8',border:'#38bdf844',icon:'◆'},
+    epic:    {bg:'#ede9fe33',color:'#a78bfa',border:'#a78bfa44',icon:'★'},
+    legendary:{bg:'#fef3c733',color:'#f59e0b',border:'#f59e0b44',icon:'✦'},
+  };
   allItems.forEach(item=>{
     const isEq=!!item._equippedIn;
     const slotLabel=isEq?item._equippedIn:(item.slot||'');
     const slotColor=isEq?'background:#d1fae533;color:#34d399;border:1px solid #34d39944':'background:var(--bg2);color:var(--text2);border:1px solid var(--border)';
-    const slotText=isEq?('equipped: '+slotLabel):slotLabel;
+    const slotText=isEq?('✓ '+slotLabel):slotLabel;
     const slotBadge=slotLabel?`<span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;${slotColor};text-transform:uppercase;letter-spacing:.04em">${slotText}</span>`:'';
+    const r=rarityStyle[item.rarity]||rarityStyle.common;
+    const rarityBadge=`<span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;background:${r.bg};color:${r.color};border:1px solid ${r.border};text-transform:uppercase;letter-spacing:.04em">${r.icon} ${item.rarity||'common'}</span>`;
     const d=document.createElement('div');d.className='inv-item';
-    d.innerHTML=`<div style="display:flex;align-items:center;gap:9px"><div style="font-size:22px;line-height:1">${item.icon}</div><div><div style="display:flex;align-items:center;gap:6px;margin-bottom:2px"><span style="font-size:12px;font-weight:600">${item.name}</span>${slotBadge}</div><div style="font-size:10px;color:var(--text2)">${item.desc}</div><div style="font-size:10px;color:var(--accent4)">ATK+${item.atk} DEF+${item.def} HP+${item.hp}</div></div></div>${item.slot?`<button class="btn btn-sm ${isEq?'btn-secondary':'btn-primary'}" onclick="openEquipModal('${item.slot||item._equippedIn}')">${isEq?'Swap':'Equip'}</button>`:''}`;
+    d.style.borderLeft=`3px solid ${r.color}`;
+    d.innerHTML=`<div style="display:flex;align-items:center;gap:9px"><div style="font-size:22px;line-height:1">${item.icon}</div><div style="flex:1"><div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-bottom:3px"><span style="font-size:12px;font-weight:600">${item.name}</span>${rarityBadge}${slotBadge}</div><div style="font-size:10px;color:var(--text2)">${item.desc}</div><div style="font-size:10px;color:var(--accent4)">ATK+${item.atk} DEF+${item.def} HP+${item.hp}</div></div></div>${item.slot?`<button class="btn btn-sm ${isEq?'btn-secondary':'btn-primary'}" onclick="openEquipModal('${item.slot||item._equippedIn}')">${isEq?'Swap':'Equip'}</button>`:''}`;
     panel.appendChild(d);
   });
 }

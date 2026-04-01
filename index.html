@@ -176,7 +176,6 @@ h2{font-size:18px;font-weight:600}h3{font-size:15px;font-weight:600}
 
   <!-- Step 2a: New Player -->
   <div id="step-new" style="width:100%;max-width:460px;display:none">
-    <div class="sec-title" style="margin-bottom:10px">Create your account</div>
     <div class="sec-title">Choose your starter</div>
     <div class="animal-grid" id="animalGrid"></div>
     <div style="margin-top:10px">
@@ -968,8 +967,15 @@ function endBattle(won,fled=false){
 }
 
 function initRaid(){
-  const boss=BOSSES[Math.floor(Math.random()*BOSSES.length)];
-  G.currentBoss={...boss};G.bossHp=boss.hp;G.bossMaxHp=boss.hp;G.raidDmg=0;G.raidXp=0;G.raidGold=0;renderRaid();
+  G.raidDmg=0;G.raidXp=0;G.raidGold=0;
+  if(G.sharedBoss){
+    G.currentBoss=G.sharedBoss;G.bossHp=G.sharedBoss.hp;G.bossMaxHp=G.sharedBoss.maxHp||G.sharedBoss.hp;
+    renderRaid();
+  }else{
+    const placeholder={name:'Loading...',emoji:'⏳',hp:1,maxHp:1,atk:0,level:'?'};
+    G.currentBoss=placeholder;G.bossHp=1;G.bossMaxHp=1;
+    renderRaid();
+  }
 }
 
 function refreshRaid(){initRaid();document.getElementById('raidLog').innerHTML='<p>A new boss appears!</p>';toast('New world boss spawned!','var(--danger)');}
@@ -1068,8 +1074,12 @@ function renderInventory(){
   if(!allItems.length){panel.innerHTML='<div style="color:var(--text2);font-size:13px;text-align:center;padding:28px 0">No items yet. Win battles & raids for drops, or buy from the shop!</div>';return;}
   allItems.forEach(item=>{
     const isEq=!!item._equippedIn;
+    const slotLabel=isEq?item._equippedIn:(item.slot||'');
+    const slotColor=isEq?'background:#d1fae533;color:#34d399;border:1px solid #34d39944':'background:var(--bg2);color:var(--text2);border:1px solid var(--border)';
+    const slotText=isEq?('equipped: '+slotLabel):slotLabel;
+    const slotBadge=slotLabel?`<span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;${slotColor};text-transform:uppercase;letter-spacing:.04em">${slotText}</span>`:'';
     const d=document.createElement('div');d.className='inv-item';
-    d.innerHTML=`<div style="display:flex;align-items:center;gap:9px"><div style="font-size:22px;line-height:1">${item.icon}</div><div><div style="font-size:12px;font-weight:600">${item.name}</div><div style="font-size:10px;color:var(--text2)">${item.desc}</div><div style="font-size:10px;color:var(--accent4)">ATK+${item.atk} DEF+${item.def} HP+${item.hp}</div>${isEq?`<div style="font-size:10px;color:var(--accent);font-style:italic">Equipped (${item._equippedIn})</div>`:''}</div></div>${item.slot?`<button class="btn btn-sm ${isEq?'btn-secondary':'btn-primary'}" onclick="openEquipModal('${item.slot||item._equippedIn}')">${isEq?'Swap':'Equip'}</button>`:``}`;
+    d.innerHTML=`<div style="display:flex;align-items:center;gap:9px"><div style="font-size:22px;line-height:1">${item.icon}</div><div><div style="display:flex;align-items:center;gap:6px;margin-bottom:2px"><span style="font-size:12px;font-weight:600">${item.name}</span>${slotBadge}</div><div style="font-size:10px;color:var(--text2)">${item.desc}</div><div style="font-size:10px;color:var(--accent4)">ATK+${item.atk} DEF+${item.def} HP+${item.hp}</div></div></div>${item.slot?`<button class="btn btn-sm ${isEq?'btn-secondary':'btn-primary'}" onclick="openEquipModal('${item.slot||item._equippedIn}')">${isEq?'Swap':'Equip'}</button>`:''}`;
     panel.appendChild(d);
   });
 }
@@ -1207,7 +1217,7 @@ window.FB = {
       {name:'Lava King',emoji:'🌋',maxHp:80000,atk:40,level:80},
     ];
     const boss=BOSSES[Math.floor(Math.random()*BOSSES.length)];
-    await set(ref(db,'worldBoss'),{...boss, hp:boss.maxHp, spawnedAt:Date.now(), defeatedBy:null});
+    await set(ref(db,'worldBoss'),{...boss, hp:boss.maxHp, maxHp:boss.maxHp, spawnedAt:Date.now(), defeatedBy:null});
   },
 
   async strikeSharedBoss(dmg){
@@ -1274,7 +1284,10 @@ function simulatePvP(challenge){
 }
 
 function updateSharedBossUI(boss){
-  const pct=Math.max(0,boss.hp/boss.maxHp*100);
+  G.currentBoss=boss;
+  G.bossHp=boss.hp;
+  G.bossMaxHp=boss.maxHp||boss.hp;
+  const pct=Math.max(0,boss.hp/G.bossMaxHp*100);
   const hpBar=document.getElementById('bossHpBar');
   const hpText=document.getElementById('bossHpText');
   const hpMax=document.getElementById('bossHpMax');

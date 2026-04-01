@@ -163,15 +163,58 @@ h2{font-size:18px;font-weight:600}h3{font-size:15px;font-weight:600}
 <div id="screen-name" class="screen active">
   <div class="name-logo">PetVerse</div>
   <div class="name-sub">Raise. Battle. Evolve. Grow.</div>
-  <div style="width:100%;max-width:460px">
+
+  <!-- Step 1: New or Returning -->
+  <div id="step-choice" style="width:100%;max-width:380px;display:flex;flex-direction:column;gap:12px">
+    <button class="btn btn-primary" style="padding:16px;font-size:15px;width:100%" onclick="showStep('new')">
+      ✨ New Player
+    </button>
+    <button class="btn btn-secondary" style="padding:16px;font-size:15px;width:100%" onclick="showStep('returning')">
+      🔄 Returning Player
+    </button>
+  </div>
+
+  <!-- Step 2a: New Player -->
+  <div id="step-new" style="width:100%;max-width:460px;display:none">
+    <div class="sec-title" style="margin-bottom:10px">Create your account</div>
     <div class="sec-title">Choose your starter</div>
     <div class="animal-grid" id="animalGrid"></div>
-    <div style="margin-top:10px"><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px">Pet name</label><input id="petNameInput" placeholder="Enter a name..." maxlength="16"></div>
-    <div style="margin-top:7px"><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px">Your trainer name</label><input id="trainerNameInput" placeholder="Your name..." maxlength="16"></div>
-    <div id="save-found-banner" style="display:none;background:#d1fae533;border:1px solid #34d399;border-radius:var(--rad-sm);padding:10px 14px;margin-bottom:10px;font-size:12px;color:#34d399;text-align:center">
-      ✅ Save found! Entering your name will load your existing pet.
+    <div style="margin-top:10px">
+      <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px">Pet name</label>
+      <input id="petNameInput" placeholder="Enter a name..." maxlength="16">
     </div>
-    <button class="btn btn-primary" style="width:100%;margin-top:13px;padding:13px;font-size:15px" onclick="startGame()">Begin Journey ✨</button>
+    <div style="margin-top:7px">
+      <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px">Trainer name</label>
+      <input id="trainerNameInput" placeholder="Your name..." maxlength="16">
+    </div>
+    <div style="margin-top:7px">
+      <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px">Choose a 4-digit PIN</label>
+      <input id="newPinInput" placeholder="e.g. 1234" maxlength="4" type="tel" pattern="[0-9]*" inputmode="numeric">
+    </div>
+    <div style="margin-top:5px;font-size:10px;color:var(--text3)">Remember your PIN — you'll need it to log back in on any device.</div>
+    <div id="new-error" style="display:none;margin-top:8px;font-size:12px;color:var(--danger);text-align:center"></div>
+    <div style="display:flex;gap:8px;margin-top:13px">
+      <button class="btn btn-secondary" style="padding:13px" onclick="showStep('choice')">← Back</button>
+      <button class="btn btn-primary" style="flex:1;padding:13px;font-size:15px" onclick="createNewPlayer()">Begin Journey ✨</button>
+    </div>
+  </div>
+
+  <!-- Step 2b: Returning Player -->
+  <div id="step-returning" style="width:100%;max-width:380px;display:none">
+    <div class="sec-title" style="margin-bottom:14px">Welcome back!</div>
+    <div>
+      <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px">Trainer name</label>
+      <input id="returnTrainerInput" placeholder="Your trainer name..." maxlength="16">
+    </div>
+    <div style="margin-top:10px">
+      <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px">4-digit PIN</label>
+      <input id="returnPinInput" placeholder="Your PIN..." maxlength="4" type="tel" pattern="[0-9]*" inputmode="numeric" onkeydown="if(event.key==='Enter')loginReturning()">
+    </div>
+    <div id="return-error" style="display:none;margin-top:8px;font-size:12px;color:var(--danger);text-align:center"></div>
+    <div style="display:flex;gap:8px;margin-top:13px">
+      <button class="btn btn-secondary" style="padding:13px" onclick="showStep('choice')">← Back</button>
+      <button class="btn btn-primary" style="flex:1;padding:13px;font-size:15px" id="loginBtn" onclick="loginReturning()">Load My Pet →</button>
+    </div>
   </div>
 </div>
 
@@ -445,6 +488,7 @@ let G={
   raidDmg:0,raidXp:0,raidGold:0,
   currentBoss:null,bossHp:5000,bossMaxHp:5000,
   battleState:null,
+  pinHash:'',
   xpBoostLeft:0,levelShield:false,
 };
 let selAnimal='dragon';
@@ -1038,12 +1082,27 @@ function renderLeaderboard(){
   list.innerHTML='<div style="font-size:12px;color:var(--text2);text-align:center;padding:20px 0">Loading live leaderboard...</div>';
 }
 
+function showStep(step){
+  document.getElementById('step-choice').style.display=step==='choice'?'flex':'none';
+  document.getElementById('step-new').style.display=step==='new'?'block':'none';
+  document.getElementById('step-returning').style.display=step==='returning'?'block':'none';
+  if(step==='new') initAnimalGrid();
+}
+
+function createNewPlayer(){
+  if(window._fbCreateNewPlayer) window._fbCreateNewPlayer();
+}
+
+function loginReturning(){
+  if(window._fbLoginReturning) window._fbLoginReturning();
+}
+
 initAnimalGrid();
 </script>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, set, get, onValue, update, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+import { getDatabase, ref, set, get, onValue, update, runTransaction } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAKGGNyxmgR8P0eKBfodIAMmeVGHD8XXqo",
@@ -1057,14 +1116,25 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
+console.log('[PetVerse] Firebase initialized, db:', db ? 'OK' : 'FAIL');
 
 window.FB = {
   db, ref, set, get, onValue, update, runTransaction,
 
-  playerKey(){return G.trainer.replace(/[^a-zA-Z0-9_]/g,'_').toLowerCase();},
+  playerKey(name){
+    const n=name||G.trainer;
+    return n.replace(/[^a-zA-Z0-9_]/g,'_').toLowerCase();
+  },
+
+  hashPin(pin){
+    let h=0;
+    for(let i=0;i<pin.length;i++){h=((h<<5)-h)+pin.charCodeAt(i);h|=0;}
+    return Math.abs(h).toString(36);
+  },
 
   async saveGame(){
     if(!G.started||!G.trainer) return;
+    console.log('[PetVerse] Saving game for', G.trainer);
     const key=this.playerKey();
     const snapshot={
       trainer:G.trainer, petName:G.petName, animalId:G.animalId,
@@ -1076,14 +1146,20 @@ window.FB = {
       inventory:G.inventory||[],
       equipped:G.equipped||{weapon:null,armor:null,accessory:null,charm:null},
       xpBoostLeft:G.xpBoostLeft||0, levelShield:G.levelShield||false,
-      lastSaved: Date.now(),
+      pinHash:G.pinHash||'',
+      lastSaved:Date.now(),
     };
-    await set(ref(db,`players/${key}`), snapshot);
-    this.updateLeaderboard();
+    try{
+      await set(ref(db,`players/${key}`), snapshot);
+      console.log('[PetVerse] Save successful');
+      this.updateLeaderboard();
+    }catch(e){
+      console.error('[PetVerse] Save FAILED:', e);
+    }
   },
 
   async loadGame(trainerName){
-    const key=trainerName.replace(/[^a-zA-Z0-9_]/g,'_').toLowerCase();
+    const key=this.playerKey(trainerName);
     const snap=await get(ref(db,`players/${key}`));
     if(snap.exists()) return snap.val();
     return null;
@@ -1286,59 +1362,17 @@ window.challengePlayer=function(trainerName){
 };
 
 async function initFirebase(){
-  const trainerInput=document.getElementById('trainerNameInput');
-  const petInput=document.getElementById('petNameInput');
-
-  trainerInput.addEventListener('blur', async()=>{
-    const tn=trainerInput.value.trim();
-    if(!tn) return;
-    const saved=await window.FB.loadGame(tn);
-    if(saved){
-      const banner=document.getElementById('save-found-banner');
-      if(banner) banner.style.display='block';
-      window._savedGame=saved;
-    } else {
-      const banner=document.getElementById('save-found-banner');
-      if(banner) banner.style.display='none';
-      window._savedGame=null;
-    }
-  });
-
+  console.log('[PetVerse] initFirebase running');
   window.FB.listenLeaderboard(renderLiveLeaderboard);
   window.FB.listenRaidLog(renderLiveRaidLog);
   await window.FB.initSharedBoss();
 }
 
 window._origStartGame=window.startGame;
-window._fbStartGame=async function(){
-  const pn=document.getElementById('petNameInput').value.trim();
-  const tn=document.getElementById('trainerNameInput').value.trim();
-  if(!pn||!tn){toast('Fill in all fields','var(--danger)');return;}
-
-  if(window._savedGame){
-    const s=window._savedGame;
-    Object.assign(G,{
-      trainer:s.trainer, petName:s.petName, animalId:s.animalId,
-      level:s.level, xp:s.xp,
-      hunger:s.hunger, happy:s.happy, energy:s.energy, clean:s.clean,
-      baseAtk:s.baseAtk, baseDef:s.baseDef, baseHp:s.baseHp, hp:s.hp, maxHp:s.maxHp,
-      gold:s.gold, gems:s.gems, stars:s.stars,
-      habits:s.habits||[], inventory:s.inventory||[],
-      equipped:s.equipped||{weapon:null,armor:null,accessory:null,charm:null},
-      xpBoostLeft:s.xpBoostLeft||0, levelShield:s.levelShield||false,
-      started:true,
-    });
-    selAnimal=G.animalId;
-    toast(`Welcome back, ${G.trainer}! Save loaded.`,'var(--accent4)');
-  } else {
-    G.trainer=tn;G.petName=pn;G.animalId=selAnimal;G.started=true;
-    const a=getAnimal();G.baseAtk=10+a.atkB;G.baseDef=8+a.defB;G.maxHp=G.baseHp;G.hp=G.maxHp;
-  }
-
+function launchGame(savedData){
   const nameScreen=document.getElementById('screen-name');
   nameScreen.classList.add('fade-out');
   setTimeout(()=>{nameScreen.style.display='none';document.getElementById('screen-main').classList.add('active');},400);
-
   renderPet();renderEquipFull();renderBattleSetup();initRaid();
   document.querySelectorAll('.day-dot').forEach(d=>d.onclick=()=>d.classList.toggle('active'));
   setSpeech('idle');
@@ -1347,9 +1381,84 @@ window._fbStartGame=async function(){
   setInterval(()=>{G.gold+=2;syncCurrency();},8000);
   setInterval(autoSpeak,25000);
   setInterval(()=>window.FB.saveGame(),30000);
-
-  await window.FB.saveGame();
+  window.FB.saveGame();
   checkIncomingChallenges();
+  if(savedData) toast(`Welcome back, ${G.trainer}! Save loaded.`,'var(--accent4)');
+  else toast(`Welcome, ${G.trainer}! Your journey begins!`,'var(--accent)');
+}
+
+window._fbCreateNewPlayer=async function(){
+  const pn=document.getElementById('petNameInput').value.trim();
+  const tn=document.getElementById('trainerNameInput').value.trim();
+  const pin=document.getElementById('newPinInput').value.trim();
+  const errEl=document.getElementById('new-error');
+  errEl.style.display='none';
+
+  if(!pn||!tn||!pin){errEl.textContent='Please fill in all fields.';errEl.style.display='block';return;}
+  if(!/^\d{4}$/.test(pin)){errEl.textContent='PIN must be exactly 4 digits.';errEl.style.display='block';return;}
+
+  const btn=document.getElementById('loginBtn');
+  document.querySelector('#step-new .btn-primary').textContent='Checking...';
+  document.querySelector('#step-new .btn-primary').disabled=true;
+
+  const existing=await window.FB.loadGame(tn);
+  if(existing){
+    errEl.textContent='That trainer name is already taken. Choose a different name or log in as a returning player.';
+    errEl.style.display='block';
+    document.querySelector('#step-new .btn-primary').textContent='Begin Journey ✨';
+    document.querySelector('#step-new .btn-primary').disabled=false;
+    return;
+  }
+
+  G.trainer=tn;G.petName=pn;G.animalId=selAnimal;G.started=true;
+  G.pinHash=window.FB.hashPin(pin);
+  const a=getAnimal();G.baseAtk=10+a.atkB;G.baseDef=8+a.defB;G.maxHp=G.baseHp;G.hp=G.maxHp;
+  launchGame(null);
+};
+
+window._fbLoginReturning=async function(){
+  const tn=document.getElementById('returnTrainerInput').value.trim();
+  const pin=document.getElementById('returnPinInput').value.trim();
+  const errEl=document.getElementById('return-error');
+  const btn=document.getElementById('loginBtn');
+  errEl.style.display='none';
+
+  if(!tn||!pin){errEl.textContent='Please enter your trainer name and PIN.';errEl.style.display='block';return;}
+
+  btn.textContent='Loading...';btn.disabled=true;
+
+  const saved=await window.FB.loadGame(tn);
+  if(!saved){
+    errEl.textContent='No account found with that name. Are you a new player?';
+    errEl.style.display='block';
+    btn.textContent='Load My Pet →';btn.disabled=false;
+    return;
+  }
+
+  const pinHash=window.FB.hashPin(pin);
+  if(saved.pinHash&&saved.pinHash!==pinHash){
+    errEl.textContent='Wrong PIN. Please try again.';
+    errEl.style.display='block';
+    btn.textContent='Load My Pet →';btn.disabled=false;
+    return;
+  }
+
+  Object.assign(G,{
+    trainer:saved.trainer, petName:saved.petName, animalId:saved.animalId,
+    level:saved.level, xp:saved.xp,
+    hunger:saved.hunger, happy:saved.happy, energy:saved.energy, clean:saved.clean,
+    baseAtk:saved.baseAtk, baseDef:saved.baseDef, baseHp:saved.baseHp,
+    hp:saved.hp, maxHp:saved.maxHp,
+    gold:saved.gold, gems:saved.gems, stars:saved.stars,
+    habits:saved.habits||[], inventory:saved.inventory||[],
+    equipped:saved.equipped||{weapon:null,armor:null,accessory:null,charm:null},
+    xpBoostLeft:saved.xpBoostLeft||0, levelShield:saved.levelShield||false,
+    pinHash:saved.pinHash||pinHash,
+    started:true,
+  });
+  selAnimal=G.animalId;
+  btn.textContent='Load My Pet →';btn.disabled=false;
+  launchGame(saved);
 };
 
 window._origGainXP=window.gainXP;
